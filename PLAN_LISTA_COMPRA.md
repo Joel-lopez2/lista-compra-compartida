@@ -2,7 +2,7 @@
 
 > Proyecto de 2.º DAM · Android nativo (Kotlin + Jetpack Compose) · Firebase · GitHub
 
-## 0. Punto de partida (estado real del proyecto)
+## 0. Estado del proyecto (actualizado)
 
 Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 
@@ -11,10 +11,26 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | Proyecto Android Studio | ✅ Creado (plantilla Compose con *Navigation Suite*) |
 | Paquete / applicationId | `org.insbaixcamp.listadelacompra` |
 | Versiones | AGP 9.4.1 · Kotlin 2.2.10 · compileSdk/targetSdk 37 · minSdk 24 · Compose BoM 2025.12.00 |
-| Repositorio Git local | ❌ No existe (no hay carpeta `.git`) |
-| Repositorio en GitHub | ❌ No creado |
-| Firebase | ❌ No conectado (sin `google-services.json`, sin plugin, sin dependencias) |
-| Código de la app | Solo `MainActivity` y tema de la plantilla |
+| Repositorio Git local | ✅ Creado (ramas `main` y `develop`) |
+| Repositorio en GitHub | ✅ `https://github.com/Joel-lopez2/lista-compra-compartida` |
+| Firebase | ✅ Conectado (proyecto `lista-compra-compartida-1b43d`, Auth e-mail/contraseña y Firestore `eur3` activados) |
+| Código de la app | Modelo de datos creado; resto pendiente |
+
+### Progreso
+
+| Fase | Estado |
+|---|---|
+| 1. Git y GitHub | ✅ Completada |
+| 2. Firebase | ✅ Completada (SHA-1 pospuesto: no hace falta para e-mail/contraseña) |
+| 3. Diseño y modelo de datos | 🔄 En curso: clases del modelo creadas; faltan bocetos |
+| 4. Autenticación | ⏳ Pendiente |
+| 5. Gestión de listas | ⏳ Pendiente |
+| 6. Categorías y productos | ⏳ Pendiente |
+| 7. Compartir listas | ⏳ Pendiente |
+| 8. Característica extra | ⏳ Pendiente |
+| 9. Reglas de seguridad | ⏳ Pendiente |
+| 10. Pulido y pruebas | ⏳ Pendiente |
+| 11. APK y entrega | ⏳ Pendiente |
 
 **Orden del plan:** Git/GitHub → Firebase → dependencias → modelo y arquitectura → funcionalidades → extra → seguridad → APK → entrega.
 
@@ -38,23 +54,23 @@ Aplicación donde cada usuario gestiona **sus listas**, puede **compartirlas** y
 
 ---
 
-## 2. FASE 1 — Git y GitHub (repositorio desde cero)
+## 2. FASE 1 — Git y GitHub (repositorio desde cero) ✅
 
 ### 2.1 Preparar Git en el ordenador
-- [ ] Instalar Git para Windows (si no está): <https://git-scm.com>
-- [ ] Comprobar en una terminal: `git --version`
-- [ ] Configurar identidad (una sola vez):
+- [x] Instalar Git para Windows (si no está): <https://git-scm.com>
+- [x] Comprobar en una terminal: `git --version`
+- [x] Configurar identidad (una sola vez):
   ```
   git config --global user.name "Tu Nombre"
   git config --global user.email "tu_correo@gmail.com"
   ```
 
 ### 2.2 Crear el repositorio en GitHub
-- [ ] Entrar en <https://github.com> y crear cuenta si no tienes
-- [ ] **New repository** → nombre: `lista-compra-compartida`
-- [ ] Visibilidad: **Public** (más fácil para el profesorado) o Private invitando al profesor como colaborador
-- [ ] **No** marcar "Add README" ni `.gitignore` (el proyecto ya tiene `.gitignore` y evitamos conflictos en el primer push)
-- [ ] Copiar la URL del repositorio
+- [x] Entrar en <https://github.com> y crear cuenta si no tienes
+- [x] **New repository** → nombre: `lista-compra-compartida`
+- [x] Visibilidad: **Public** (más fácil para el profesorado) o Private invitando al profesor como colaborador
+- [x] **No** marcar "Add README" ni `.gitignore` (el proyecto ya tiene `.gitignore` y evitamos conflictos en el primer push)
+- [x] Copiar la URL del repositorio
 
 ### 2.3 Inicializar y subir el proyecto
 Desde la carpeta del proyecto (`Listadelacompra`):
@@ -66,45 +82,45 @@ git commit -m "Proyecto inicial de Android Studio"
 git remote add origin https://github.com/TU_USUARIO/lista-compra-compartida.git
 git push -u origin main
 ```
-- [ ] Verificar que en GitHub aparece el código
-- [ ] **Comprobar que NO se ha subido `local.properties`** (contiene rutas locales; debe estar en `.gitignore`)
+- [x] Verificar que en GitHub aparece el código
+- [x] **Comprobar que NO se ha subido `local.properties`** (contiene rutas locales; debe estar en `.gitignore`)
 
 ### 2.4 Flujo de ramas (sencillo)
-- [ ] Crear la rama de desarrollo: `git checkout -b develop`
-- [ ] Una rama por funcionalidad: `feature/auth`, `feature/listas`, `feature/productos`, `feature/compartir`, `feature/extra`
-- [ ] Al terminar cada una: merge a `develop`; al cerrar versión: merge a `main`
-- [ ] Mensajes de commit claros (ej. `Añade pantalla de login con Firebase Auth`)
-- [ ] Hacer commits pequeños y frecuentes (el historial demuestra el trabajo continuo)
+- [x] Crear la rama de desarrollo: `git checkout -b develop`
+- [x] Una rama por funcionalidad: `feature/auth`, `feature/listas`, `feature/productos`, `feature/compartir`, `feature/extra`
+- [x] Al terminar cada una: merge a `develop`; al cerrar versión: merge a `main`
+- [x] Mensajes de commit claros (ej. `Añade pantalla de login con Firebase Auth`)
+- [x] Hacer commits pequeños y frecuentes (el historial demuestra el trabajo continuo)
 
 > Alternativa gráfica: Android Studio → *Git → Create Git Repository* y *Git → GitHub → Share Project on GitHub*.
 
 ---
 
-## 3. FASE 2 — Crear y conectar Firebase
+## 3. FASE 2 — Crear y conectar Firebase ✅
 
 ### 3.1 Crear el proyecto en Firebase
-- [ ] Entrar en <https://console.firebase.google.com> con tu cuenta de Google
-- [ ] **Add project** → nombre: `lista-compra-compartida`
-- [ ] Google Analytics: se puede desactivar (no hace falta)
+- [x] Entrar en <https://console.firebase.google.com> con tu cuenta de Google
+- [x] **Add project** → nombre: `lista-compra-compartida`
+- [x] Google Analytics: se puede desactivar (no hace falta)
 
 ### 3.2 Registrar la app Android
-- [ ] En el proyecto → **Add app → Android**
-- [ ] **Package name:** `org.insbaixcamp.listadelacompra` (debe coincidir exactamente con `applicationId`)
-- [ ] Nombre: Lista de la compra
-- [ ] **SHA-1 de depuración** (necesario para Auth): desde la carpeta del proyecto
+- [x] En el proyecto → **Add app → Android**
+- [x] **Package name:** `org.insbaixcamp.listadelacompra` (debe coincidir exactamente con `applicationId`)
+- [x] Nombre: Lista de la compra
+- [ ] *(Pospuesto, no necesario para e-mail/contraseña; solo para Google/teléfono)* **SHA-1 de depuración**: desde la carpeta del proyecto
   ```
   gradlew.bat signingReport
   ```
   Copiar el `SHA-1` de la variante `debug` y pegarlo en *Configuración del proyecto → Tus apps → Añadir huella digital*
-- [ ] Descargar `google-services.json` y colocarlo en `app/` (junto a `app/build.gradle.kts`)
-- [ ] ⚠️ Decidir si `google-services.json` se sube a GitHub. Para un proyecto de clase es habitual subirlo; si el repositorio es público, no incluir claves privadas y proteger los datos con reglas de Firestore
+- [x] Descargar `google-services.json` y colocarlo en `app/` (junto a `app/build.gradle.kts`)
+- [x] ⚠️ Decidir si `google-services.json` se sube a GitHub. Para un proyecto de clase es habitual subirlo; si el repositorio es público, no incluir claves privadas y proteger los datos con reglas de Firestore
 
 ### 3.3 Activar los servicios
-- [ ] **Authentication → Sign-in method → Correo electrónico/contraseña** → activar
-- [ ] **Firestore Database → Crear base de datos**
+- [x] **Authentication → Sign-in method → Correo electrónico/contraseña** → activar
+- [x] **Firestore Database → Crear base de datos**
   - Modo: producción (reglas cerradas, las definimos en la Fase 9)
   - Ubicación: `eur3 (europe-west)` o la más cercana
-- [ ] (Más adelante) **App Distribution** para repartir el APK
+- [x] (Más adelante) **App Distribution** para repartir el APK
 
 ### 3.4 Añadir Firebase a Gradle
 Editar los archivos del proyecto (usar el catálogo `gradle/libs.versions.toml`, como ya hace la plantilla):
@@ -112,11 +128,11 @@ Editar los archivos del proyecto (usar el catálogo `gradle/libs.versions.toml`,
 **`gradle/libs.versions.toml`** — añadir:
 ```toml
 [versions]
-googleServices = "4.4.x"        # comprobar la última versión estable
-firebaseBom = "34.x.x"          # comprobar la última versión estable
-navigationCompose = "2.9.x"     # comprobar la última versión estable
+googleServices = "4.5.0"
+firebaseBom = "34.19.0"
+navigationCompose = "2.10.2"
 lifecycleViewmodelCompose = "2.11.0"
-coroutinesPlayServices = "1.10.x"
+coroutinesPlayServices = "1.10.2"
 
 [libraries]
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
@@ -152,16 +168,17 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
 }
 ```
-- [ ] **Sync Gradle** y comprobar que compila
-- [ ] Añadir permiso de Internet en `AndroidManifest.xml`: `<uses-permission android:name="android.permission.INTERNET" />`
-- [ ] Ejecutar la app en el emulador/móvil y comprobar que no hay errores de Firebase en Logcat
-- [ ] Commit: `Conecta Firebase (Auth y Firestore)` y push
+- [x] **Sync Gradle** y comprobar que compila
+- [x] Añadir permiso de Internet en `AndroidManifest.xml`: `<uses-permission android:name="android.permission.INTERNET" />`
+- [x] Ejecutar la app en el emulador/móvil y comprobar que no hay errores de Firebase en Logcat
+- [x] Commit: `Conecta Firebase (Auth y Firestore)` y push
 
-> Nota: las versiones exactas hay que consultarlas al implementarlo (Android Studio puede ayudar con *Tools → Firebase*). El proyecto usa AGP 9.x, así que si algún plugin da error de compatibilidad se revisa en ese momento.
+> Versiones aplicadas y comprobadas en octubre de 2026. El proyecto compila y arranca con ellas (AGP 9.4.1).
+> Pendiente de commit en la rama `feature/firebase`.
 
 ---
 
-## 4. FASE 3 — Diseño y modelo de datos
+## 4. FASE 3 — Diseño y modelo de datos 🔄
 
 ### 4.1 Bocetos (papel o Figma)
 - [ ] Login / Registro
@@ -208,8 +225,9 @@ ui/theme          → (ya existe)
 navigation        → Routes, NavGraph
 util              → AutoCategorizer, PredefinedProducts
 ```
-- [ ] Crear los paquetes y las `data class` del modelo (con valores por defecto, necesarios para que Firestore las deserialice)
-- [ ] Commit: `Añade modelo de datos y estructura de paquetes`
+- [x] Crear las `data class` del modelo en `data/model` (`User`, `ShoppingList`, `Category`, `Product`), con valores por defecto y `@DocumentId`, necesarios para que Firestore las deserialice
+- [ ] Crear el resto de paquetes (`repository`, `ui`, `navigation`, `util`) a medida que se necesiten
+- [ ] Commit: `Añade modelo de datos`
 
 > La plantilla trae `ic_home`, `ic_favorite` y `ic_account_box` y un `NavigationSuiteScaffold` de ejemplo en `MainActivity`. Se sustituirá por nuestra navegación.
 

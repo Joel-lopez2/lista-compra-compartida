@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "567129560975",
+    "project_id": "lista-compra-compartida-1b43d",
+    "storage_bucket": "lista-compra-compartida-1b43d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:567129560975:android:836e82fece861c9ba8ddfa",
+        "android_client_info": {
+          "package_name": "org.insbaixcamp.listadelacompra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYNEVQO6-DTGDTSmmMC1E4AVLktN-9F5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
