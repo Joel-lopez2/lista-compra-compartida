@@ -42,6 +42,19 @@ class ListRepository(
         awaitClose { registration.remove() }
     }
 
+    /** Escucha una lista concreta. Emite null si la lista no existe (por ejemplo, si se ha eliminado). */
+    fun observeList(listId: String): Flow<ShoppingList?> = callbackFlow {
+        val registration = lists.document(listId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.toObject(ShoppingList::class.java))
+            }
+        awaitClose { registration.remove() }
+    }
+
     /** Escucha en tiempo real cuantos productos tiene una lista. */
     fun observeProductCount(listId: String): Flow<Int> = callbackFlow {
         val registration = lists.document(listId).collection("products")

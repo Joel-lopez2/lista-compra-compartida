@@ -68,14 +68,8 @@ fun NavGraph(
                     defaultValue = ""
                 }
             )
-        ) { backStackEntry ->
-            val listId = backStackEntry.arguments?.getString(Routes.DETAIL_ARG_ID).orEmpty()
-            val listName = backStackEntry.arguments?.getString(Routes.DETAIL_ARG_NAME).orEmpty()
-            ListDetailScreen(
-                listId = listId,
-                listName = listName,
-                onBack = { navController.popBackStack() }
-            )
+        ) {
+            ListDetailScreen(onBack = { navController.popBackStack() })
         }
     }
 }
