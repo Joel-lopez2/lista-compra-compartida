@@ -53,9 +53,29 @@
     <string name="more_options">Más opciones</string>
     <string name="retry">Reintentar</string>
     <string name="back">Volver</string>
-    <string name="detail_placeholder">Aquí irán las categorías y los productos.</string>
 
     <!-- Errores de listas -->
     <string name="error_loading_lists">No se han podido cargar las listas.</string>
     <string name="error_action_failed">No se ha podido completar la acción. Inténtalo de nuevo.</string>
+    <!-- Detalle de lista: categorias y productos -->
+    <string name="detail_empty">Añade tu primer producto con la barra de abajo.</string>
+    <string name="add_product_hint">Añadir producto…</string>
+    <string name="add_product">Añadir producto</string>
+    <string name="uncategorized">Sin categoría</string>
+    <string name="new_category">Nueva categoría</string>
+    <string name="rename_category">Renombrar categoría</string>
+    <string name="category_name_label">Nombre de la categoría</string>
+    <string name="category_icon_label">Icono (emoji, opcional)</string>
+    <string name="edit_product">Editar producto</string>
+    <string name="product_name_label">Nombre del producto</string>
+    <string name="product_quantity_label">Cantidad (opcional)</string>
+    <string name="category_label">Categoría</string>
+    <string name="delete_product_title">Eliminar producto</string>
+    <string name="delete_product_message">¿Eliminar «%1$s»?</string>
+    <string name="delete_category_title">Eliminar categoría</string>
+    <string name="delete_category_message">¿Eliminar la categoría «%1$s»? Sus productos pasarán a «Sin categoría».</string>
+    <string name="error_loading_list">No se ha podido cargar la lista.</string>
+    <string name="pick_category_title">Elegir categoría</string>
+    <string name="search_category_hint">Buscar categoría…</string>
+    <string name="no_results">Sin resultados</string>
 </resources>

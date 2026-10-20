@@ -24,8 +24,8 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 2. Firebase | ✅ Completada (SHA-1 pospuesto: no hace falta para e-mail/contraseña) |
 | 3. Diseño y modelo de datos | ✅ Completada (diseño en `docs/DISENO.md`, tema verde aplicado) |
 | 4. Autenticación | ✅ Completada y probada (merge a `develop`) |
-| 5. Gestión de listas | 🔄 En curso (decisiones tomadas, rama `feature/listas`) |
-| 6. Categorías y productos | ⏳ Pendiente |
+| 5. Gestión de listas | ✅ Completada y probada (merge a `develop`) |
+| 6. Categorías y productos | 🔄 En curso (decisiones tomadas, rama `feature/productos`) |
 | 7. Compartir listas | ⏳ Pendiente |
 | 8. Característica extra | ⏳ Pendiente |
 | 9. Reglas de seguridad | ⏳ Pendiente |
@@ -267,7 +267,7 @@ Tareas:
 
 ---
 
-## 6. FASE 5 — Gestión de listas (`feature/listas`) 🔄
+## 6. FASE 5 — Gestión de listas (`feature/listas`) ✅
 
 Rama: `feature/listas` (creada desde `develop`). Decisiones tomadas punto por punto:
 
@@ -296,19 +296,42 @@ Tareas:
 - [x] Ruta `detail/{listId}` con pantalla provisional
 - [x] Textos en `strings.xml`
 - [x] Probar los casos del punto 13 (crear, renombrar, eliminar con borrado en cascada, lista vacía, orden, contador y detalle provisional: todo correcto)
-- [ ] Merge a `develop`
+- [x] Merge a `develop`
 
 ---
 
-## 7. FASE 6 — Categorías y productos (`feature/productos`)
+## 7. FASE 6 — Categorías y productos (`feature/productos`) 🔄
 
-- [ ] `CategoryRepository` y `ProductRepository` con Flow en tiempo real
-- [ ] `ListDetailScreen`: productos agrupados por categoría
-- [ ] CRUD de categorías (nombre obligatorio)
-- [ ] CRUD de productos (nombre obligatorio, cantidad opcional)
-- [ ] Marcar/desmarcar completado (tachado, sin eliminar) y sección "Completados"
-- [ ] Al eliminar una categoría: sus productos pasan a "Sin categoría"
-- [ ] Probar todos los casos con un solo usuario
+Rama: `feature/productos` (creada desde `develop`, que ya incluye `feature/listas`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | Repositorios | `CategoryRepository` y `ProductRepository` en `data/repository`, con `callbackFlow` en tiempo real sobre `lists/{listId}/categories` y `lists/{listId}/products`. Funciones `suspend` para crear, editar y eliminar |
+| 2 | ViewModel | `ListDetailViewModel` con un único `DetailUiState` (cargando, error, categorías, productos agrupados, completados). Recibe el `listId` por la ruta y también escucha el documento de la lista para mostrar su nombre actualizado |
+| 3 | Lista eliminada mientras está abierta | Si el propietario la borra, el detalle detecta que ya no existe y vuelve a "Mis listas" |
+| 4 | `ListDetailScreen` | Productos agrupados por categoría (cabecera con icono y nombre) y al final "Sin categoría". Sustituye la pantalla provisional |
+| 5 | **Añadir productos** | **Barra inferior de añadido rápido**: se escribe el nombre y se añade al instante (nombre obligatorio, sin espacios sobrantes). Entra en "Sin categoría"; en la Fase 8 se autoclasificará |
+| 6 | Editar producto | Al tocar un producto se abre un diálogo con nombre (obligatorio), cantidad (opcional, texto libre) y categoría (**campo desplegable con buscador**: al pulsarlo se abre una ventana con buscador, sin tildes ni mayúsculas, y la lista de categorías, incluida "Sin categoría") |
+| 7 | **Eliminar producto** | **Botón "Eliminar" en el diálogo de edición, con confirmación** |
+| 8 | **Categorías** | **Menú ⋮ en cada cabecera** (Renombrar / Eliminar) **y "Nueva categoría" en el menú superior**. Nombre obligatorio e icono (emoji) opcional |
+| 9 | Eliminar categoría | Confirmación; sus productos pasan a "Sin categoría" (se actualizan en un batch antes de borrar la categoría) |
+| 10 | **Completados** | **Se quedan en su categoría**, marcados con la casilla y con el nombre tachado y en gris. No se mueven a ninguna sección aparte: dentro de su categoría **bajan al final** (primero los pendientes y luego los completados, cada grupo en orden de creación). Al desmarcarlos vuelven a su posición. **Nunca se eliminan al completarlos** |
+| 11 | Permisos | Cualquier miembro de la lista puede ver, crear, editar y eliminar categorías y productos (ya lo permiten las reglas de Firestore) |
+| 12 | Estados | Cargando, lista vacía ("Añade tu primer producto") y error con *Reintentar* |
+| 13 | Textos | Todos en `strings.xml` |
+| 14 | Pruebas | Con un solo usuario: crear, editar y eliminar productos y categorías; completar y desmarcar; eliminar una categoría con productos; el contador de la tarjeta en "Mis listas"; eliminar la lista con contenido |
+| 15 | Merge | `feature/productos` → `develop` |
+
+Tareas:
+- [x] `CategoryRepository` y `ProductRepository` con Flow en tiempo real
+- [x] `ListDetailViewModel` + `DetailUiState` (agrupación por categoría)
+- [x] `ListDetailScreen`: productos por categoría, con los completados tachados al final de su categoría
+- [x] Barra inferior de añadido rápido
+- [x] Diálogo de producto (editar, cantidad, categoría, eliminar con confirmación)
+- [x] CRUD de categorías (menú ⋮, nueva categoría, eliminar con productos a "Sin categoría")
+- [x] Marcar/desmarcar completado
+- [x] Textos en `strings.xml`
+- [ ] Probar los casos del punto 14 *(código escrito; pendiente de compilar y probar)*
 - [ ] Merge a `develop`
 
 ---
