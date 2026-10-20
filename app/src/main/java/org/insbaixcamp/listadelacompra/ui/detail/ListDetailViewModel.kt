@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,7 @@ data class DetailUiState(
     val isLoading: Boolean = true,
     @StringRes val errorRes: Int? = null,
     val listName: String = "",
+    val isOwner: Boolean = false,
     val categories: List<Category> = emptyList(),
     val groups: List<CategoryGroup> = emptyList(),
     val listDeleted: Boolean = false,
@@ -48,7 +50,7 @@ data class DetailUiState(
  */
 class ListDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    private val listId: String = savedStateHandle.get<String>(Routes.DETAIL_ARG_ID).orEmpty()
+    val listId: String = savedStateHandle.get<String>(Routes.DETAIL_ARG_ID).orEmpty()
     private val initialName: String = savedStateHandle.get<String>(Routes.DETAIL_ARG_NAME).orEmpty()
 
     private val listRepository = ListRepository()
@@ -77,9 +79,13 @@ class ListDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             ) { list, categories, products ->
                 buildState(list, categories, products)
             }
-                .catch {
+                .catch { error ->
+                    // Si el propietario nos quita de la lista, ya no hay permiso: volvemos atras
+                    val lostAccess = error is FirebaseFirestoreException &&
+                        error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED
                     _uiState.update { s ->
-                        s.copy(isLoading = false, errorRes = R.string.error_loading_list)
+                        if (lostAccess) s.copy(isLoading = false, listDeleted = true)
+                        else s.copy(isLoading = false, errorRes = R.string.error_loading_list)
                     }
                 }
                 .collect { newState ->
@@ -119,6 +125,7 @@ class ListDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         return DetailUiState(
             isLoading = false,
             listName = list.name,
+            isOwner = list.ownerId == listRepository.currentUid,
             categories = sortedCategories,
             groups = groups
         )

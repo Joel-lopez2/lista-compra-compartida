@@ -55,6 +55,7 @@ import org.insbaixcamp.listadelacompra.R
 import org.insbaixcamp.listadelacompra.data.model.Category
 import org.insbaixcamp.listadelacompra.data.model.Product
 import org.insbaixcamp.listadelacompra.ui.components.ConfirmDialog
+import org.insbaixcamp.listadelacompra.ui.share.ShareDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +67,7 @@ fun ListDetailScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showNewCategory by rememberSaveable { mutableStateOf(false) }
+    var showShare by rememberSaveable { mutableStateOf(false) }
     var categoryToEdit by remember { mutableStateOf<Category?>(null) }
     var categoryToDelete by remember { mutableStateOf<Category?>(null) }
     var productToEdit by remember { mutableStateOf<Product?>(null) }
@@ -116,6 +118,20 @@ fun ListDetailScreen(
                                     onClick = {
                                         topMenuExpanded = false
                                         showNewCategory = true
+                                    }
+                                )
+                                // El propietario comparte; los demas solo ven los miembros
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            stringResource(
+                                                if (uiState.isOwner) R.string.share_list else R.string.members
+                                            )
+                                        )
+                                    },
+                                    onClick = {
+                                        topMenuExpanded = false
+                                        showShare = true
                                     }
                                 )
                             }
@@ -204,6 +220,17 @@ fun ListDetailScreen(
     }
 
     // ---- Dialogos ----
+
+    if (showShare) {
+        ShareDialog(
+            listId = viewModel.listId,
+            onDismiss = { showShare = false },
+            onLeft = {
+                showShare = false
+                onBack()
+            }
+        )
+    }
 
     if (showNewCategory) {
         CategoryDialog(

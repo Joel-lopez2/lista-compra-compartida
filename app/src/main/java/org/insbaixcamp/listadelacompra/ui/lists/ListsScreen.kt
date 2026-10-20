@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.insbaixcamp.listadelacompra.R
 import org.insbaixcamp.listadelacompra.data.model.ShoppingList
+import org.insbaixcamp.listadelacompra.ui.components.ConfirmDialog
+import org.insbaixcamp.listadelacompra.ui.share.ShareDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +66,8 @@ fun ListsScreen(
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var listToRename by remember { mutableStateOf<ShoppingList?>(null) }
     var listToDelete by remember { mutableStateOf<ShoppingList?>(null) }
+    var listToShare by remember { mutableStateOf<ShoppingList?>(null) }
+    var listToLeave by remember { mutableStateOf<ShoppingList?>(null) }
 
     // Mensajes puntuales (por ejemplo, "no se ha podido completar la accion")
     val message = uiState.messageRes?.let { stringResource(it) }
@@ -146,8 +150,10 @@ fun ListsScreen(
                                 item = item,
                                 isOwner = true,
                                 onClick = { onOpenList(item.list) },
+                                onShare = { listToShare = item.list },
                                 onRename = { listToRename = item.list },
-                                onDelete = { listToDelete = item.list }
+                                onDelete = { listToDelete = item.list },
+                                onLeave = {}
                             )
                         }
                     }
@@ -158,8 +164,10 @@ fun ListsScreen(
                                 item = item,
                                 isOwner = false,
                                 onClick = { onOpenList(item.list) },
+                                onShare = { listToShare = item.list },
                                 onRename = {},
-                                onDelete = {}
+                                onDelete = {},
+                                onLeave = { listToLeave = item.list }
                             )
                         }
                     }
@@ -204,6 +212,27 @@ fun ListsScreen(
                 viewModel.deleteList(list.id)
             },
             onDismiss = { listToDelete = null }
+        )
+    }
+
+    listToShare?.let { list ->
+        ShareDialog(
+            listId = list.id,
+            onDismiss = { listToShare = null },
+            onLeft = { listToShare = null }
+        )
+    }
+
+    listToLeave?.let { list ->
+        ConfirmDialog(
+            title = stringResource(R.string.leave_list),
+            message = stringResource(R.string.leave_list_message, list.name),
+            confirmLabel = stringResource(R.string.leave),
+            onConfirm = {
+                listToLeave = null
+                viewModel.leaveList(list.id)
+            },
+            onDismiss = { listToLeave = null }
         )
     }
 
@@ -265,8 +294,10 @@ private fun ListCard(
     item: ListItem,
     isOwner: Boolean,
     onClick: () -> Unit,
+    onShare: () -> Unit,
     onRename: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onLeave: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -295,6 +326,15 @@ private fun ListCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                // El propietario ve con cuanta gente ha compartido la lista
+                val others = item.list.members.size - 1
+                if (isOwner && others > 0) {
+                    Text(
+                        text = "👥 " + pluralStringResource(R.plurals.shared_with_count, others, others),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
                 if (!isOwner) {
                     val owner = item.ownerName
                     Text(
@@ -309,19 +349,29 @@ private fun ListCard(
                 }
             }
 
-            // Menu solo para el propietario
-            if (isOwner) {
-                Box {
-                    IconButton(onClick = { menuExpanded = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_more_vert),
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false }
-                    ) {
+            // Menu: el propietario puede compartir, renombrar y eliminar;
+            // un invitado puede ver los miembros y salir de la lista
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_more_vert),
+                        contentDescription = stringResource(R.string.more_options)
+                    )
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(stringResource(if (isOwner) R.string.share else R.string.members))
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onShare()
+                        }
+                    )
+                    if (isOwner) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.rename)) },
                             onClick = {
@@ -334,6 +384,14 @@ private fun ListCard(
                             onClick = {
                                 menuExpanded = false
                                 onDelete()
+                            }
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.leave_list)) },
+                            onClick = {
+                                menuExpanded = false
+                                onLeave()
                             }
                         )
                     }
