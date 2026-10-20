@@ -78,4 +78,42 @@
     <string name="pick_category_title">Elegir categoría</string>
     <string name="search_category_hint">Buscar categoría…</string>
     <string name="no_results">Sin resultados</string>
+    <!-- Compartir listas -->
+    <string name="share_list">Compartir lista</string>
+    <string name="share">Compartir</string>
+    <string name="members">Miembros</string>
+    <string name="members_title">Miembros</string>
+    <string name="share_email_label">Correo de la persona</string>
+    <string name="share_button">Compartir</string>
+    <string name="share_success">Lista compartida con %1$s.</string>
+    <string name="owner_tag">Propietario</string>
+    <string name="you_tag">tú</string>
+    <string name="unknown_user">Usuario</string>
+    <string name="remove">Quitar</string>
+    <string name="remove_member_title">Quitar miembro</string>
+    <string name="remove_member_message">¿Quitar a %1$s de «%2$s»? Dejará de tener acceso a la lista.</string>
+    <string name="leave_list">Salir de la lista</string>
+    <string name="leave">Salir</string>
+    <string name="leave_list_message">¿Salir de «%1$s»? Dejarás de ver esta lista hasta que te vuelvan a invitar.</string>
+    <string name="close">Cerrar</string>
+    <plurals name="shared_with_count">
+        <item quantity="one">Compartida con %d persona</item>
+        <item quantity="other">Compartida con %d personas</item>
+    </plurals>
+
+    <!-- Errores al compartir -->
+    <string name="error_share_invalid_email">Escribe un correo válido.</string>
+    <string name="error_user_not_found">Ese usuario no está registrado.</string>
+    <string name="error_already_member">Ya tiene acceso a esta lista.</string>
+    <string name="error_share_self">No puedes compartir una lista contigo mismo.</string>
+    <string name="error_loading_members">No se han podido cargar los miembros.</string>
+    <!-- Diseno -->
+    <string name="auth_login_subtitle">Tus listas, siempre contigo</string>
+    <string name="auth_register_subtitle">Crea tu cuenta y empieza a compartir</string>
+    <string name="greeting">Hola, %1$s 👋</string>
+    <string name="greeting_no_name">¡Hola! 👋</string>
+    <string name="lists_subtitle">Tus listas de la compra</string>
+    <string name="list_progress">%1$d de %2$d comprados</string>
+    <string name="list_no_products">Aún sin productos</string>
+    <string name="list_all_done">¡Todo comprado! 🎉</string>
 </resources>

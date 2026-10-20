@@ -32,7 +32,7 @@ class AuthViewModel(
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun login(email: String, password: String) {
-        val cleanEmail = email.trim()
+        val cleanEmail = email.trim().lowercase()
         val error = when {
             cleanEmail.isBlank() || password.isBlank() -> R.string.error_empty_fields
             !isValidEmail(cleanEmail) -> R.string.error_invalid_email
@@ -47,7 +47,7 @@ class AuthViewModel(
 
     fun register(name: String, email: String, password: String, repeatPassword: String) {
         val cleanName = name.trim()
-        val cleanEmail = email.trim()
+        val cleanEmail = email.trim().lowercase()
         val error = when {
             cleanName.isBlank() || cleanEmail.isBlank() ||
                 password.isBlank() || repeatPassword.isBlank() -> R.string.error_empty_fields
