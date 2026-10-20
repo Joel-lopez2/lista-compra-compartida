@@ -22,8 +22,8 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 |---|---|
 | 1. Git y GitHub | ✅ Completada |
 | 2. Firebase | ✅ Completada (SHA-1 pospuesto: no hace falta para e-mail/contraseña) |
-| 3. Diseño y modelo de datos | 🔄 En curso: clases del modelo creadas; faltan bocetos |
-| 4. Autenticación | ⏳ Pendiente |
+| 3. Diseño y modelo de datos | ✅ Completada (diseño en `docs/DISENO.md`, tema verde aplicado) |
+| 4. Autenticación | ⏳ Siguiente |
 | 5. Gestión de listas | ⏳ Pendiente |
 | 6. Categorías y productos | ⏳ Pendiente |
 | 7. Compartir listas | ⏳ Pendiente |
@@ -178,14 +178,16 @@ dependencies {
 
 ---
 
-## 4. FASE 3 — Diseño y modelo de datos 🔄
+## 4. FASE 3 — Diseño y modelo de datos ✅
 
 ### 4.1 Bocetos (papel o Figma)
-- [ ] Login / Registro
-- [ ] Mis listas (propias + compartidas)
-- [ ] Detalle de lista (productos por categoría + completados)
-- [ ] Diálogo compartir / ver miembros
-- [ ] Estilo minimalista inspirado en Recordatorios de iOS
+- [x] Login / Registro
+- [x] Mis listas (propias + compartidas)
+- [x] Detalle de lista (productos por categoría + completados)
+- [x] Diálogo compartir / ver miembros
+- [x] Estilo minimalista inspirado en Recordatorios de iOS (paleta verde aplicada en `ui/theme`)
+
+> Los bocetos, el mapa de navegación y la paleta están en **`docs/DISENO.md`**.
 
 ### 4.2 Modelo en Firestore
 ```
@@ -226,8 +228,8 @@ navigation        → Routes, NavGraph
 util              → AutoCategorizer, PredefinedProducts
 ```
 - [x] Crear las `data class` del modelo en `data/model` (`User`, `ShoppingList`, `Category`, `Product`), con valores por defecto y `@DocumentId`, necesarios para que Firestore las deserialice
-- [ ] Crear el resto de paquetes (`repository`, `ui`, `navigation`, `util`) a medida que se necesiten
-- [ ] Commit: `Añade modelo de datos`
+- [x] El resto de paquetes (`repository`, `ui`, `navigation`, `util`) se crean junto con el primer archivo de cada uno, a partir de la Fase 4
+- [ ] Commit: `Añade modelo de datos y diseño de pantallas`
 
 > La plantilla trae `ic_home`, `ic_favorite` y `ic_account_box` y un `NavigationSuiteScaffold` de ejemplo en `MainActivity`. Se sustituirá por nuestra navegación.
 
