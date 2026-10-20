@@ -23,7 +23,7 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 1. Git y GitHub | ✅ Completada |
 | 2. Firebase | ✅ Completada (SHA-1 pospuesto: no hace falta para e-mail/contraseña) |
 | 3. Diseño y modelo de datos | ✅ Completada (diseño en `docs/DISENO.md`, tema verde aplicado) |
-| 4. Autenticación | ⏳ Siguiente |
+| 4. Autenticación | ✅ Completada y probada (merge a `develop`) |
 | 5. Gestión de listas | ⏳ Pendiente |
 | 6. Categorías y productos | ⏳ Pendiente |
 | 7. Compartir listas | ⏳ Pendiente |
@@ -235,18 +235,35 @@ util              → AutoCategorizer, PredefinedProducts
 
 ---
 
-## 5. FASE 4 — Autenticación (`feature/auth`)
+## 5. FASE 4 — Autenticación (`feature/auth`) ✅
 
-- [ ] `AuthRepository`: registrar, iniciar sesión, cerrar sesión, usuario actual
-- [ ] Al registrarse, crear el documento `users/{uid}`
-- [ ] `AuthViewModel` con `StateFlow` de estado (cargando / error / éxito)
-- [ ] Pantallas `LoginScreen` y `RegisterScreen`
-- [ ] Validaciones: email válido, contraseña ≥ 6 caracteres, campos no vacíos
-- [ ] Mensajes de error en español
-- [ ] Navegación: si hay sesión → "Mis listas"; si no → Login
-- [ ] Botón de cerrar sesión
-- [ ] Probar: registro, login, sesión persistente tras cerrar la app
-- [ ] Merge a `develop`
+Rama: `feature/auth` (creada desde `develop`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | `AuthRepository` | Clase en `data/repository` con `FirebaseAuth` y `FirebaseFirestore`: `register`, `login`, `logout`, `currentUser`. Funciones `suspend` con `await()` (coroutines-play-services) |
+| 2 | Documento `users/{uid}` | Al registrarse se crea con `uid`, `email` y `displayName`. Si falla el guardado, se informa del error |
+| 3 | `AuthViewModel` | Un único `AuthUiState` (cargando, error, éxito) expuesto en un `StateFlow`. El ViewModel crea `AuthRepository()` por defecto, sin Hilt ni factory |
+| 4 | `LoginScreen` | Correo + contraseña (con mostrar/ocultar), botón y enlace a "Regístrate" |
+| 5 | `RegisterScreen` | **Nombre + correo + contraseña + repetir contraseña** |
+| 6 | Validaciones | Campos no vacíos, correo con formato válido, contraseña ≥ 6, las dos contraseñas coinciden. Se validan antes de llamar a Firebase |
+| 7 | Mensajes en español | Todos en `strings.xml`; los errores de Firebase (credenciales, correo ya usado, sin red) se traducen a mensajes propios |
+| 8 | Navegación | Navigation Compose: arranca en `login` si no hay sesión y en `lists` si la hay. Se sustituye el `NavigationSuiteScaffold` de la plantilla |
+| 9 | Cerrar sesión | **Icono en la barra superior de "Mis listas"**, con diálogo de confirmación |
+| 10 | Recuperar contraseña | ❌ No de momento (no es requisito; opcional al final) |
+| 11 | Pruebas | Registro, login, error por contraseña incorrecta, sesión persistente tras cerrar la app, cierre de sesión |
+| 12 | Merge | `feature/auth` → `develop` |
+
+Tareas:
+- [x] `AuthRepository`
+- [x] Creación de `users/{uid}` al registrarse
+- [x] `AuthViewModel` + `AuthUiState`
+- [x] `LoginScreen` y `RegisterScreen`
+- [x] Validaciones y mensajes en `strings.xml`
+- [x] Navegación según sesión (`Routes`, `NavGraph`) y `MainActivity` actualizado
+- [x] Pantalla provisional "Mis listas" con el botón de cerrar sesión
+- [x] Probar los casos del punto 11 (registro, login, errores, sesión persistente y cierre de sesión: todo correcto)
+- [x] Merge a `develop`
 
 ---
 
