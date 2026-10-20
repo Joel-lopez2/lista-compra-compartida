@@ -25,6 +25,7 @@ import org.insbaixcamp.listadelacompra.data.repository.ShareRepository
 data class ListItem(
     val list: ShoppingList,
     val productCount: Int = 0,
+    val completedCount: Int = 0,
     val ownerName: String? = null
 )
 
@@ -34,6 +35,7 @@ data class ListsUiState(
     @StringRes val errorRes: Int? = null,      // error al cargar (ocupa la pantalla)
     val myLists: List<ListItem> = emptyList(),
     val sharedLists: List<ListItem> = emptyList(),
+    val userName: String = "",                // nombre del usuario para el saludo
     @StringRes val messageRes: Int? = null     // mensaje puntual (snackbar)
 )
 
@@ -53,6 +55,24 @@ class ListsViewModel(
 
     init {
         load()
+        loadUserName()
+    }
+
+    /** Lee el nombre del usuario (solo la primera palabra) para el saludo. */
+    private fun loadUserName() {
+        val uid = repository.currentUid ?: return
+        viewModelScope.launch {
+            val name = try {
+                repository.getUserName(uid)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            if (!name.isNullOrBlank()) {
+                _uiState.update { it.copy(userName = name.trim().substringBefore(' ')) }
+            }
+        }
     }
 
     /** Empieza (o reinicia) la escucha en tiempo real de las listas. */
@@ -98,9 +118,11 @@ class ListsViewModel(
     /** Combina cada lista con el contador de sus productos en tiempo real. */
     private fun withProductCount(lists: List<ShoppingList>): Flow<List<ListItem>> {
         if (lists.isEmpty()) return flowOf(emptyList())
-        val countFlows = lists.map { repository.observeProductCount(it.id) }
-        return combine(countFlows) { counts ->
-            lists.mapIndexed { index, list -> ListItem(list, productCount = counts[index]) }
+        val statsFlows = lists.map { repository.observeProductStats(it.id) }
+        return combine(statsFlows) { stats ->
+            lists.mapIndexed { index, list ->
+                ListItem(list, productCount = stats[index].total, completedCount = stats[index].done)
+            }
         }
     }
 

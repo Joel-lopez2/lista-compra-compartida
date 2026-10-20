@@ -46,7 +46,7 @@ fun PasswordField(
                 Text(stringResource(if (visible) R.string.hide_password else R.string.show_password))
             }
         },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         modifier = modifier.fillMaxWidth()
     )
 }

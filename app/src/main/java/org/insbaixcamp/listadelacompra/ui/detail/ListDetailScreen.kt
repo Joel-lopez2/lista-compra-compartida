@@ -1,6 +1,12 @@
 package org.insbaixcamp.listadelacompra.ui.detail
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +24,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,6 +53,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -56,6 +70,8 @@ import org.insbaixcamp.listadelacompra.data.model.Category
 import org.insbaixcamp.listadelacompra.data.model.Product
 import org.insbaixcamp.listadelacompra.ui.components.ConfirmDialog
 import org.insbaixcamp.listadelacompra.ui.share.ShareDialog
+import org.insbaixcamp.listadelacompra.ui.theme.ListColors
+import org.insbaixcamp.listadelacompra.ui.theme.ListStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +81,7 @@ fun ListDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val style = ListColors.forId(viewModel.listId)
 
     var showNewCategory by rememberSaveable { mutableStateOf(false) }
     var showShare by rememberSaveable { mutableStateOf(false) }
@@ -91,7 +108,13 @@ fun ListDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(uiState.listName, maxLines = 1) },
+                title = {
+                    Text(
+                        text = uiState.listName,
+                        maxLines = 1,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -139,13 +162,16 @@ fun ListDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                    containerColor = style.color,
+                    titleContentColor = style.onColor,
+                    navigationIconContentColor = style.onColor,
+                    actionIconContentColor = style.onColor
                 )
             )
         },
         bottomBar = {
             if (!uiState.isLoading && uiState.errorRes == null) {
-                AddProductBar(onAdd = { viewModel.addProduct(it) })
+                AddProductBar(style = style, onAdd = { viewModel.addProduct(it) })
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -182,7 +208,13 @@ fun ListDetailScreen(
             }
 
             uiState.isEmpty -> {
-                Box(contentModifier.padding(32.dp), contentAlignment = Alignment.Center) {
+                Column(
+                    modifier = contentModifier.padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(style.emoji, fontSize = 64.sp)
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.detail_empty),
                         style = MaterialTheme.typography.bodyLarge,
@@ -194,14 +226,23 @@ fun ListDetailScreen(
             else -> {
                 LazyColumn(
                     modifier = contentModifier,
-                    contentPadding = PaddingValues(bottom = 16.dp)
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    item(key = "progress") {
+                        ProgressHeader(
+                            done = uiState.doneCount,
+                            total = uiState.totalCount,
+                            style = style
+                        )
+                    }
                     // Productos agrupados por categoria (los completados se quedan en la suya, tachados)
                     uiState.groups.forEach { group ->
                         val category = group.category
                         item(key = "header_${category?.id ?: "none"}") {
                             CategoryHeader(
                                 category = category,
+                                style = style,
                                 onRename = { categoryToEdit = category },
                                 onDelete = { categoryToDelete = category }
                             )
@@ -209,6 +250,8 @@ fun ListDetailScreen(
                         items(group.products, key = { it.id }) { product ->
                             ProductRow(
                                 product = product,
+                                style = style,
+                                modifier = Modifier.animateItem(),
                                 onToggle = { viewModel.toggleCompleted(product) },
                                 onClick = { productToEdit = product }
                             )
@@ -303,9 +346,36 @@ fun ListDetailScreen(
     }
 }
 
+/** Resumen de progreso de la lista: "N de M comprados" y una barra. */
+@Composable
+private fun ProgressHeader(done: Int, total: Int, style: ListStyle) {
+    if (total == 0) return
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 4.dp)) {
+        Text(
+            text = if (done == total) {
+                stringResource(R.string.list_all_done)
+            } else {
+                stringResource(R.string.list_progress, done, total)
+            },
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(Modifier.height(8.dp))
+        LinearProgressIndicator(
+            progress = { done.toFloat() / total },
+            color = style.color,
+            trackColor = style.color.copy(alpha = 0.25f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(CircleShape)
+        )
+    }
+}
+
 /** Barra inferior para anadir productos rapidamente. */
 @Composable
-private fun AddProductBar(onAdd: (String) -> Unit) {
+private fun AddProductBar(style: ListStyle, onAdd: (String) -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
 
     fun submit() {
@@ -333,10 +403,19 @@ private fun AddProductBar(onAdd: (String) -> Unit) {
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(onDone = { submit() }),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(28.dp),
                 modifier = Modifier.weight(1f)
             )
-            IconButton(onClick = { submit() }, enabled = text.isNotBlank()) {
+            Spacer(Modifier.size(8.dp))
+            FilledIconButton(
+                onClick = { submit() },
+                enabled = text.isNotBlank(),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = style.color,
+                    contentColor = style.onColor
+                ),
+                modifier = Modifier.size(52.dp)
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_add),
                     contentDescription = stringResource(R.string.add_product)
@@ -350,6 +429,7 @@ private fun AddProductBar(onAdd: (String) -> Unit) {
 @Composable
 private fun CategoryHeader(
     category: Category?,
+    style: ListStyle,
     onRename: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -359,28 +439,37 @@ private fun CategoryHeader(
     } else {
         listOf(category.icon, category.name).filter { it.isNotBlank() }.joinToString(" ")
     }
+    val pillColor = style.color.copy(alpha = 0.20f)
+        .compositeOver(MaterialTheme.colorScheme.background)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 4.dp, top = 8.dp),
+            .padding(top = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title.uppercase(),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
+        // Etiqueta con forma de pastilla, teñida con el color de la lista
+        Box(
             modifier = Modifier
-                .weight(1f)
-                .padding(vertical = 12.dp)
-        )
+                .clip(RoundedCornerShape(50))
+                .background(pillColor)
+                .padding(horizontal = 14.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Spacer(Modifier.weight(1f))
         if (category != null) {
             Box {
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_more_vert),
                         contentDescription = stringResource(R.string.more_options),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 DropdownMenu(
@@ -410,34 +499,59 @@ private fun CategoryHeader(
 @Composable
 private fun ProductRow(
     product: Product,
+    style: ListStyle,
+    modifier: Modifier = Modifier,
     onToggle: () -> Unit,
     onClick: () -> Unit
 ) {
     val done = product.completed
-    Row(
-        modifier = Modifier
+    val surface = MaterialTheme.colorScheme.surface
+    // El fondo se tiñe suavemente al marcar el producto como comprado
+    val background by animateColorAsState(
+        targetValue = if (done) style.color.copy(alpha = 0.12f).compositeOver(surface) else surface,
+        label = "productBackground"
+    )
+
+    Surface(
+        color = background,
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        Checkbox(checked = done, onCheckedChange = { onToggle() })
-        Column(modifier = Modifier
-            .weight(1f)
-            .padding(end = 8.dp)) {
-            Text(
-                text = product.name,
-                style = MaterialTheme.typography.bodyLarge,
-                textDecoration = if (done) TextDecoration.LineThrough else null,
-                color = if (done) MaterialTheme.colorScheme.onSurfaceVariant
-                else MaterialTheme.colorScheme.onSurface
-            )
-            if (product.quantity.isNotBlank()) {
-                Text(
-                    text = product.quantity,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        Row(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = done,
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = style.color,
+                    checkmarkColor = style.onColor,
+                    uncheckedColor = style.color
                 )
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp, top = 8.dp, bottom = 8.dp)
+            ) {
+                Text(
+                    text = product.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textDecoration = if (done) TextDecoration.LineThrough else null,
+                    color = if (done) MaterialTheme.colorScheme.onSurfaceVariant
+                    else MaterialTheme.colorScheme.onSurface
+                )
+                if (product.quantity.isNotBlank()) {
+                    Text(
+                        text = product.quantity,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

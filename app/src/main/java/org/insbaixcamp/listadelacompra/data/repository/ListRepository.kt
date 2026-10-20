@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import org.insbaixcamp.listadelacompra.data.model.ProductStats
 import org.insbaixcamp.listadelacompra.data.model.ShoppingList
 
 /**
@@ -55,12 +56,17 @@ class ListRepository(
         awaitClose { registration.remove() }
     }
 
-    /** Escucha en tiempo real cuantos productos tiene una lista. */
-    fun observeProductCount(listId: String): Flow<Int> = callbackFlow {
+    /** Escucha en tiempo real cuantos productos tiene una lista y cuantos estan completados. */
+    fun observeProductStats(listId: String): Flow<ProductStats> = callbackFlow {
         val registration = lists.document(listId).collection("products")
             .addSnapshotListener { snapshot, error ->
                 // Si falla, mostramos 0 en lugar de romper toda la pantalla
-                trySend(if (error != null) 0 else snapshot?.size() ?: 0)
+                if (error != null || snapshot == null) {
+                    trySend(ProductStats())
+                } else {
+                    val done = snapshot.documents.count { it.getBoolean("completed") == true }
+                    trySend(ProductStats(total = snapshot.size(), done = done))
+                }
             }
         awaitClose { registration.remove() }
     }
