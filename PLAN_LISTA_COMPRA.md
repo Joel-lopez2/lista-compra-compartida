@@ -25,8 +25,8 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 3. Diseño y modelo de datos | ✅ Completada (diseño en `docs/DISENO.md`, tema verde aplicado) |
 | 4. Autenticación | ✅ Completada y probada (merge a `develop`) |
 | 5. Gestión de listas | ✅ Completada y probada (merge a `develop`) |
-| 6. Categorías y productos | 🔄 En curso (decisiones tomadas, rama `feature/productos`) |
-| 7. Compartir listas | ⏳ Pendiente |
+| 6. Categorías y productos | ✅ Completada (merge a `develop`) |
+| 7. Compartir listas | 🔄 En curso (decisiones tomadas, rama `feature/compartir`) |
 | 8. Característica extra | ⏳ Pendiente |
 | 9. Reglas de seguridad | ⏳ Pendiente |
 | 10. Pulido y pruebas | ⏳ Pendiente |
@@ -300,7 +300,7 @@ Tareas:
 
 ---
 
-## 7. FASE 6 — Categorías y productos (`feature/productos`) 🔄
+## 7. FASE 6 — Categorías y productos (`feature/productos`) ✅
 
 Rama: `feature/productos` (creada desde `develop`, que ya incluye `feature/listas`). Decisiones tomadas punto por punto:
 
@@ -332,18 +332,80 @@ Tareas:
 - [x] Marcar/desmarcar completado
 - [x] Textos en `strings.xml`
 - [ ] Probar los casos del punto 14 *(código escrito; pendiente de compilar y probar)*
-- [ ] Merge a `develop`
+- [x] Merge a `develop`
 
 ---
 
-## 8. FASE 7 — Compartir listas (`feature/compartir`)
+## 8. FASE 7 — Compartir listas (`feature/compartir`) 🔄
 
-- [ ] `ShareDialog`: introducir email
-- [ ] Buscar usuario en `users`; si no existe, mostrar "Ese usuario no está registrado"
-- [ ] Añadir `uid` a `members` (evitar duplicados y compartir con uno mismo)
-- [ ] Mostrar miembros de la lista; el propietario puede quitar a alguien
-- [ ] Opción "Salir de la lista" para invitados
-- [ ] **Prueba con dos cuentas** (emulador + móvil, o dos emuladores): ver cambios en tiempo real
+Rama: `feature/compartir` (creada desde `develop`, que ya incluye `feature/productos`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | **Permisos** | **Solo el propietario** invita y quita miembros. Los invitados pueden ver y editar categorías y productos, ver quién tiene acceso y **salir de la lista**. El propietario no puede salir (tiene que eliminarla) |
+| 2 | **Cómo se invita** | **Por correo electrónico.** Se busca en `users` por el campo `email`. La persona tiene que estar registrada |
+| 3 | Correos en minúsculas | El correo se guarda y se busca siempre en minúsculas y sin espacios. Se ajusta `AuthRepository.register` para guardarlo así (los usuarios de prueba creados con mayúsculas habrá que registrarlos de nuevo) |
+| 4 | `ShareDialog` | Campo de correo + botón *Compartir*, y debajo la lista de miembros. Mensajes: "Escribe un correo válido", "Ese usuario no está registrado", "Ya tiene acceso a esta lista", "No puedes compartir una lista contigo mismo" |
+| 5 | Añadir y quitar | `members` se modifica con `arrayUnion` / `arrayRemove` (sin duplicados). Se añade cuando la búsqueda encuentra al usuario |
+| 6 | Miembros | Se muestran nombre y correo de cada miembro (leyendo `users/{uid}`), con el propietario marcado como "Propietario". El propietario tiene un botón de quitar en los demás, con confirmación |
+| 7 | **Salir de la lista** | Opción en el menú ⋮ de la tarjeta (listas compartidas) y en el diálogo de miembros, con confirmación. La lista desaparece de "Compartidas conmigo" |
+| 8 | **Dónde está "Compartir"** | **Menú ⋮ de la tarjeta (propietario) y menú superior del detalle.** En el detalle, todos los miembros ven *Miembros*; solo el propietario ve añadir y quitar |
+| 9 | Si te quitan de la lista | Si el propietario te quita (o borra la lista) mientras la tienes abierta, la app vuelve a "Mis listas" |
+| 10 | **Reglas de Firestore** | **Se afinan ahora** (ver abajo): solo el propietario modifica `members`; un miembro solo puede quitarse a sí mismo |
+| 11 | Pruebas | Con dos cuentas: invitar, comprobar que aparece en "Compartidas conmigo" con el nombre del propietario, que el invitado edita productos y categorías, que se ve en tiempo real (dos dispositivos), quitar a un miembro, salir de la lista y los mensajes de error |
+| 12 | Merge | `feature/compartir` → `develop` |
+
+### Reglas de Firestore (para pegar en la consola)
+
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == uid;
+    }
+
+    match /lists/{listId} {
+      // Crear: el creador es el propietario y el unico miembro inicial
+      allow create: if request.auth != null
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.resource.data.members == [request.auth.uid];
+
+      // Leer: cualquier miembro
+      allow read: if request.auth.uid in resource.data.members;
+
+      // Modificar: el propietario todo; un miembro solo puede quitarse a si mismo
+      allow update: if request.auth.uid == resource.data.ownerId
+                    || (request.auth.uid in resource.data.members
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+                        && request.resource.data.members == resource.data.members.removeAll([request.auth.uid]));
+
+      // Eliminar: solo el propietario
+      allow delete: if request.auth.uid == resource.data.ownerId;
+
+      // Categorias y productos: cualquier miembro
+      match /{sub=**} {
+        allow read, write: if request.auth.uid in
+          get(/databases/$(database)/documents/lists/$(listId)).data.members;
+      }
+    }
+  }
+}
+```
+
+Tareas:
+- [x] Guardar el correo en minúsculas al registrarse
+- [x] `ShareRepository` (o ampliar `ListRepository`): buscar usuario por correo, añadir, quitar, salir y leer miembros
+- [x] `ShareViewModel` + estado (buscando, error, miembros)
+- [x] `ShareDialog` con correo y lista de miembros
+- [x] Salir de la lista (tarjeta compartida y diálogo de miembros)
+- [x] Menú ⋮ de la tarjeta (Compartir) y menú superior del detalle (Compartir / Miembros)
+- [x] Volver a "Mis listas" si pierdes el acceso
+- [x] Textos en `strings.xml`
+- [ ] Publicar las reglas nuevas en la consola de Firebase
+- [ ] Probar los casos del punto 11 *(código escrito; pendiente de publicar las reglas, compilar y probar)*
 - [ ] Merge a `develop`
 
 ---

@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import org.insbaixcamp.listadelacompra.R
 import org.insbaixcamp.listadelacompra.data.model.ShoppingList
 import org.insbaixcamp.listadelacompra.data.repository.ListRepository
+import org.insbaixcamp.listadelacompra.data.repository.ShareRepository
 
 /** Una lista junto con los datos extra que se muestran en su tarjeta. */
 data class ListItem(
@@ -38,7 +39,8 @@ data class ListsUiState(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ListsViewModel(
-    private val repository: ListRepository = ListRepository()
+    private val repository: ListRepository = ListRepository(),
+    private val shareRepository: ShareRepository = ShareRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ListsUiState())
@@ -135,6 +137,12 @@ class ListsViewModel(
 
     fun deleteList(listId: String) {
         runAction { repository.deleteList(listId) }
+    }
+
+    /** El usuario sale de una lista que le han compartido. */
+    fun leaveList(listId: String) {
+        val uid = repository.currentUid ?: return
+        runAction { shareRepository.removeMember(listId, uid) }
     }
 
     fun messageShown() {
