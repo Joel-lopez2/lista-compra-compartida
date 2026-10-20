@@ -28,9 +28,34 @@
 
     <!-- Mis listas (provisional hasta la Fase 5) -->
     <string name="lists_title">Mis listas</string>
-    <string name="lists_placeholder">Aquí aparecerán tus listas.</string>
     <string name="logout">Cerrar sesión</string>
     <string name="logout_dialog_message">¿Quieres cerrar la sesión?</string>
     <string name="accept">Aceptar</string>
     <string name="cancel">Cancelar</string>
+    <!-- Gestion de listas -->
+    <string name="section_my_lists">Mis listas</string>
+    <string name="section_shared">Compartidas conmigo</string>
+    <string name="lists_empty">Aún no tienes listas.\nPulsa + para crear la primera.</string>
+    <plurals name="product_count">
+        <item quantity="one">%d producto</item>
+        <item quantity="other">%d productos</item>
+    </plurals>
+    <string name="list_owner">de %1$s</string>
+    <string name="new_list">Nueva lista</string>
+    <string name="rename_list">Renombrar lista</string>
+    <string name="list_name_label">Nombre de la lista</string>
+    <string name="create">Crear</string>
+    <string name="save">Guardar</string>
+    <string name="rename">Renombrar</string>
+    <string name="delete">Eliminar</string>
+    <string name="delete_list_title">Eliminar lista</string>
+    <string name="delete_list_message">¿Eliminar «%1$s»? Se borrarán también todas sus categorías y productos. Esta acción no se puede deshacer.</string>
+    <string name="more_options">Más opciones</string>
+    <string name="retry">Reintentar</string>
+    <string name="back">Volver</string>
+    <string name="detail_placeholder">Aquí irán las categorías y los productos.</string>
+
+    <!-- Errores de listas -->
+    <string name="error_loading_lists">No se han podido cargar las listas.</string>
+    <string name="error_action_failed">No se ha podido completar la acción. Inténtalo de nuevo.</string>
 </resources>

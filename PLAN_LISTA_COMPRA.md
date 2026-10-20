@@ -24,7 +24,7 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 2. Firebase | ✅ Completada (SHA-1 pospuesto: no hace falta para e-mail/contraseña) |
 | 3. Diseño y modelo de datos | ✅ Completada (diseño en `docs/DISENO.md`, tema verde aplicado) |
 | 4. Autenticación | ✅ Completada y probada (merge a `develop`) |
-| 5. Gestión de listas | ⏳ Pendiente |
+| 5. Gestión de listas | 🔄 En curso (decisiones tomadas, rama `feature/listas`) |
 | 6. Categorías y productos | ⏳ Pendiente |
 | 7. Compartir listas | ⏳ Pendiente |
 | 8. Característica extra | ⏳ Pendiente |
@@ -267,14 +267,35 @@ Tareas:
 
 ---
 
-## 6. FASE 5 — Gestión de listas (`feature/listas`)
+## 6. FASE 5 — Gestión de listas (`feature/listas`) 🔄
 
-- [ ] `ListRepository`: escuchar listas del usuario en tiempo real, crear, renombrar, eliminar
-- [ ] `ListsScreen` con secciones *Mis listas* y *Compartidas conmigo*
-- [ ] Crear lista (nombre obligatorio; el creador es `ownerId` y está en `members`)
-- [ ] Renombrar; eliminar solo el propietario (con confirmación)
-- [ ] Estados: vacío, cargando, error
-- [ ] Al borrar una lista, borrar también sus categorías y productos
+Rama: `feature/listas` (creada desde `develop`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | `ListRepository` | En `data/repository`. Escucha en tiempo real `lists.whereArrayContains("members", uid)` con un `callbackFlow`. Funciones `suspend`: crear, renombrar, eliminar |
+| 2 | Orden | **Por fecha de creación, las más recientes arriba.** Se ordena en la app (no en la consulta) para no necesitar un índice compuesto de Firestore. Una lista recién creada, con `createdAt` aún sin confirmar, se trata como la más nueva |
+| 3 | `ListsViewModel` | `ListsUiState` único (cargando, error, listas propias, compartidas) en un `StateFlow`; el ViewModel crea `ListRepository()` por defecto |
+| 4 | `ListsScreen` | Secciones **Mis listas** y **Compartidas conmigo** (según `ownerId == uid`); botón flotante (+); icono de cerrar sesión de la Fase 4 |
+| 5 | Crear lista | Diálogo con nombre obligatorio (sin espacios sobrantes, máximo 40 caracteres). `ownerId` = usuario actual y `members` = [su uid] |
+| 6 | Renombrar y eliminar | Menú ⋮ solo en las listas propias: *Renombrar* y *Eliminar*. Eliminar pide confirmación. Las listas compartidas no tienen menú hasta la Fase 7 (*Salir de la lista*) |
+| 7 | **Borrado en cascada** | **Desde la app, con un `WriteBatch`**: se leen `categories` y `products` de la lista y se borran junto con la lista en una sola operación atómica (límite de 500 documentos, de sobra). Sin Cloud Functions |
+| 8 | **Contador de productos** | **Sí, ahora.** Cada tarjeta muestra "N productos" con un listener en tiempo real sobre `lists/{id}/products` (0 hasta la Fase 6) |
+| 9 | **Propietario en compartidas** | **Sí.** En las compartidas se muestra "de {nombre}" leyendo `users/{ownerId}` una sola vez y guardándolo en memoria |
+| 10 | Estados | Cargando (hasta la primera respuesta), vacío ("Aún no tienes listas…") y error (mensaje con botón *Reintentar*) |
+| 11 | Navegación | Pulsar una tarjeta navega a `detail/{listId}`. Hasta la Fase 6 es una pantalla provisional con el nombre de la lista |
+| 12 | Textos | Todos en `strings.xml` |
+| 13 | Pruebas | Crear, renombrar, eliminar (comprobando en Firestore que se borra la lista y sus subcolecciones), lista vacía, orden, contador, sin red |
+| 14 | Merge | `feature/listas` → `develop` |
+
+Tareas:
+- [x] `ListRepository` (escuchar, crear, renombrar, eliminar con batch)
+- [x] `ListsViewModel` + `ListsUiState` (con contador y nombre del propietario)
+- [x] `ListsScreen` con secciones, tarjetas, FAB y estados
+- [x] Diálogos de crear, renombrar y confirmar eliminación
+- [x] Ruta `detail/{listId}` con pantalla provisional
+- [x] Textos en `strings.xml`
+- [x] Probar los casos del punto 13 (crear, renombrar, eliminar con borrado en cascada, lista vacía, orden, contador y detalle provisional: todo correcto)
 - [ ] Merge a `develop`
 
 ---
