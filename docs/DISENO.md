@@ -1,7 +1,7 @@
 # Diseño de la aplicación — Lista de la compra compartida
 
-Estilo: minimalista y funcional, inspirado en la app Recordatorios de iOS.
-Material 3 con una paleta verde (fresco, asociado a la compra) y mucho espacio en blanco.
+Estilo: **colorido y divertido** (rediseño de la rama `feature/diseno`), con Material 3.
+Paleta coral + turquesa + amarillo, tema claro y oscuro según el móvil, y cada lista con su propio color y emoji.
 
 ## 1. Mapa de navegación
 
@@ -131,26 +131,28 @@ Si hay sesión iniciada la app arranca en `lists`; si no, en `login`.
 
 | Rol | Claro | Oscuro |
 |---|---|---|
-| Primario (verde) | `#2E7D4F` | `#7FD6A0` |
-| Sobre primario | `#FFFFFF` | `#00391C` |
-| Contenedor primario | `#B7F0CB` | `#005229` |
-| Secundario | `#4F6354` | `#B5CCB9` |
-| Terciario (acento naranja) | `#B5651D` | `#FFB77C` |
-| Fondo | `#F7F9F5` | `#101411` |
-| Superficie | `#FFFFFF` | `#181D19` |
-| Error | `#BA1A1A` | `#FFB4AB` |
+| Primario (coral) | `#FF6B57` | tono coral claro |
+| Secundario (turquesa) | `#14B8A6` | turquesa claro |
+| Terciario (amarillo) | `#FFC233` | amarillo suave |
+| Fondo | crema `#FFF8F1` | marrón muy oscuro |
 
-Se desactiva el color dinámico de Android 12+ para que la app tenga siempre la misma identidad
-(y las capturas de la documentación sean coherentes).
+Los valores exactos están en `ui/theme/Color.kt`. Se mantiene desactivado el color dinámico de Android 12+
+para que la app tenga siempre la misma identidad.
+
+### Color y emoji por lista
+`ui/theme/ListColors.kt` elige uno de 8 estilos (color + emoji: 🛒🥐🧀🥑🥛🍇🍓🥦) a partir del hash del id de la lista.
+Así todos los miembros ven la lista igual sin guardar nada extra en Firestore.
 
 ### Tipografía y formas
-- Tipografía por defecto de Material 3 (Roboto); títulos en `titleLarge`, categorías en `labelLarge` en mayúsculas.
-- Esquinas redondeadas de 16 dp en tarjetas y 12 dp en campos.
-- Márgenes laterales de 16 dp; separación de 8 dp entre elementos de lista.
+- Títulos en negrita (`Type.kt`); categorías como "pastillas" teñidas con el color de la lista.
+- Esquinas: 24 dp en tarjetas, 16 dp en campos y filas de producto, pastilla completa en botones y barra de añadir.
+- Cabecera con degradado coral → naranja y emoji en Login/Registro (`AuthHeader`).
+- Barra de progreso "N de M comprados" en cada tarjeta de lista y en el detalle.
+- Barra superior del detalle con el color de la lista; los productos marcados tiñen su fondo con animación.
 
 ### Componentes Compose previstos
 `Scaffold` + `TopAppBar`, `LazyColumn`, `Card`, `OutlinedTextField`, `Checkbox`/`IconToggleButton`,
-`FloatingActionButton`, `AlertDialog`, `DropdownMenu`, `Snackbar` para errores y confirmaciones.
+`ExtendedFloatingActionButton`, `LinearProgressIndicator`, `AlertDialog`, `DropdownMenu`, `Snackbar` para errores y confirmaciones.
 
 ## 4. Textos principales (español)
 

@@ -42,6 +42,12 @@ data class DetailUiState(
 ) {
     val isEmpty: Boolean
         get() = categories.isEmpty() && groups.isEmpty()
+
+    /** Productos totales y completados, para la barra de progreso. */
+    val totalCount: Int
+        get() = groups.sumOf { it.products.size }
+    val doneCount: Int
+        get() = groups.sumOf { group -> group.products.count { it.completed } }
 }
 
 /**

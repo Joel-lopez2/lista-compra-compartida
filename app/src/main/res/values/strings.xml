@@ -107,4 +107,13 @@
     <string name="error_already_member">Ya tiene acceso a esta lista.</string>
     <string name="error_share_self">No puedes compartir una lista contigo mismo.</string>
     <string name="error_loading_members">No se han podido cargar los miembros.</string>
+    <!-- Diseno -->
+    <string name="auth_login_subtitle">Tus listas, siempre contigo</string>
+    <string name="auth_register_subtitle">Crea tu cuenta y empieza a compartir</string>
+    <string name="greeting">Hola, %1$s 👋</string>
+    <string name="greeting_no_name">¡Hola! 👋</string>
+    <string name="lists_subtitle">Tus listas de la compra</string>
+    <string name="list_progress">%1$d de %2$d comprados</string>
+    <string name="list_no_products">Aún sin productos</string>
+    <string name="list_all_done">¡Todo comprado! 🎉</string>
 </resources>

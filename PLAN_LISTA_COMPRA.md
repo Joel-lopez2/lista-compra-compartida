@@ -27,6 +27,7 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 5. Gestión de listas | ✅ Completada y probada (merge a `develop`) |
 | 6. Categorías y productos | ✅ Completada (merge a `develop`) |
 | 7. Compartir listas | 🔄 En curso (decisiones tomadas, rama `feature/compartir`) |
+| Rediseño visual | 🔄 En curso (rama `feature/diseno`, código escrito; pendiente de compilar y probar) |
 | 8. Característica extra | ⏳ Pendiente |
 | 9. Reglas de seguridad | ⏳ Pendiente |
 | 10. Pulido y pruebas | ⏳ Pendiente |
@@ -407,6 +408,30 @@ Tareas:
 - [ ] Publicar las reglas nuevas en la consola de Firebase
 - [ ] Probar los casos del punto 11 *(código escrito; pendiente de publicar las reglas, compilar y probar)*
 - [ ] Merge a `develop`
+
+---
+
+## 8 bis. REDISEÑO VISUAL (`feature/diseno`) 🔄
+
+Cambio de aspecto pedido tras la Fase 7. Rama creada desde `feature/compartir`.
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | Alcance | **Tema + rediseño de las pantallas principales** (Login, Registro, Mis listas, Detalle) |
+| 2 | Estilo | **Colorido y divertido** |
+| 3 | Tema | **Claro y oscuro** según el móvil (sin color dinámico) |
+| 4 | Paleta | **Coral + turquesa + amarillo** sobre fondo crema |
+| 5 | Color por lista | Color y emoji según el hash del id de la lista (8 estilos), sin guardar nada en Firestore |
+| 6 | Progreso | **Sí**: "N de M comprados" con barra en cada lista y en el detalle (`ProductStats` en `ListRepository`) |
+| 7 | Login/Registro | Cabecera con degradado y emoji (`AuthHeader`), campos de 16 dp y botones en pastilla |
+| 8 | Mis listas | Saludo "Hola, {nombre} 👋", tarjetas de 24 dp teñidas, botón extendido "Nueva lista" |
+| 9 | Detalle | Barra superior con el color de la lista, categorías en pastilla, filas redondeadas con animación al marcar, barra de añadir en pastilla |
+
+- [x] Tema (`Color.kt`, `Theme.kt`, `Type.kt`, `ListColors.kt`)
+- [x] Pantallas reescritas y textos nuevos en `strings.xml`
+- [x] `docs/DISENO.md` actualizado
+- [ ] Compilar y probar en claro y oscuro
+- [ ] Commit y merge a `develop`
 
 ---
 
