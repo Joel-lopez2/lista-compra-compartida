@@ -2,7 +2,7 @@
 
 > Proyecto de 2.º DAM · Android nativo (Kotlin + Jetpack Compose) · Firebase · GitHub
 
-## 0. Punto de partida (estado real del proyecto)
+## 0. Estado del proyecto (actualizado)
 
 Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 
@@ -11,10 +11,26 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | Proyecto Android Studio | ✅ Creado (plantilla Compose con *Navigation Suite*) |
 | Paquete / applicationId | `org.insbaixcamp.listadelacompra` |
 | Versiones | AGP 9.4.1 · Kotlin 2.2.10 · compileSdk/targetSdk 37 · minSdk 24 · Compose BoM 2025.12.00 |
-| Repositorio Git local | ❌ No existe (no hay carpeta `.git`) |
-| Repositorio en GitHub | ❌ No creado |
-| Firebase | ❌ No conectado (sin `google-services.json`, sin plugin, sin dependencias) |
-| Código de la app | Solo `MainActivity` y tema de la plantilla |
+| Repositorio Git local | ✅ Creado (ramas `main` y `develop`) |
+| Repositorio en GitHub | ✅ `https://github.com/Joel-lopez2/lista-compra-compartida` |
+| Firebase | ✅ Conectado (proyecto `lista-compra-compartida-1b43d`, Auth e-mail/contraseña y Firestore `eur3` activados) |
+| Código de la app | Modelo de datos creado; resto pendiente |
+
+### Progreso
+
+| Fase | Estado |
+|---|---|
+| 1. Git y GitHub | ✅ Completada |
+| 2. Firebase | ✅ Completada (SHA-1 pospuesto: no hace falta para e-mail/contraseña) |
+| 3. Diseño y modelo de datos | ✅ Completada (diseño en `docs/DISENO.md`, tema verde aplicado) |
+| 4. Autenticación | ✅ Completada y probada (merge a `develop`) |
+| 5. Gestión de listas | ✅ Completada y probada (merge a `develop`) |
+| 6. Categorías y productos | 🔄 En curso (decisiones tomadas, rama `feature/productos`) |
+| 7. Compartir listas | ⏳ Pendiente |
+| 8. Característica extra | ⏳ Pendiente |
+| 9. Reglas de seguridad | ⏳ Pendiente |
+| 10. Pulido y pruebas | ⏳ Pendiente |
+| 11. APK y entrega | ⏳ Pendiente |
 
 **Orden del plan:** Git/GitHub → Firebase → dependencias → modelo y arquitectura → funcionalidades → extra → seguridad → APK → entrega.
 
@@ -38,23 +54,23 @@ Aplicación donde cada usuario gestiona **sus listas**, puede **compartirlas** y
 
 ---
 
-## 2. FASE 1 — Git y GitHub (repositorio desde cero)
+## 2. FASE 1 — Git y GitHub (repositorio desde cero) ✅
 
 ### 2.1 Preparar Git en el ordenador
-- [ ] Instalar Git para Windows (si no está): <https://git-scm.com>
-- [ ] Comprobar en una terminal: `git --version`
-- [ ] Configurar identidad (una sola vez):
+- [x] Instalar Git para Windows (si no está): <https://git-scm.com>
+- [x] Comprobar en una terminal: `git --version`
+- [x] Configurar identidad (una sola vez):
   ```
   git config --global user.name "Tu Nombre"
   git config --global user.email "tu_correo@gmail.com"
   ```
 
 ### 2.2 Crear el repositorio en GitHub
-- [ ] Entrar en <https://github.com> y crear cuenta si no tienes
-- [ ] **New repository** → nombre: `lista-compra-compartida`
-- [ ] Visibilidad: **Public** (más fácil para el profesorado) o Private invitando al profesor como colaborador
-- [ ] **No** marcar "Add README" ni `.gitignore` (el proyecto ya tiene `.gitignore` y evitamos conflictos en el primer push)
-- [ ] Copiar la URL del repositorio
+- [x] Entrar en <https://github.com> y crear cuenta si no tienes
+- [x] **New repository** → nombre: `lista-compra-compartida`
+- [x] Visibilidad: **Public** (más fácil para el profesorado) o Private invitando al profesor como colaborador
+- [x] **No** marcar "Add README" ni `.gitignore` (el proyecto ya tiene `.gitignore` y evitamos conflictos en el primer push)
+- [x] Copiar la URL del repositorio
 
 ### 2.3 Inicializar y subir el proyecto
 Desde la carpeta del proyecto (`Listadelacompra`):
@@ -66,45 +82,45 @@ git commit -m "Proyecto inicial de Android Studio"
 git remote add origin https://github.com/TU_USUARIO/lista-compra-compartida.git
 git push -u origin main
 ```
-- [ ] Verificar que en GitHub aparece el código
-- [ ] **Comprobar que NO se ha subido `local.properties`** (contiene rutas locales; debe estar en `.gitignore`)
+- [x] Verificar que en GitHub aparece el código
+- [x] **Comprobar que NO se ha subido `local.properties`** (contiene rutas locales; debe estar en `.gitignore`)
 
 ### 2.4 Flujo de ramas (sencillo)
-- [ ] Crear la rama de desarrollo: `git checkout -b develop`
-- [ ] Una rama por funcionalidad: `feature/auth`, `feature/listas`, `feature/productos`, `feature/compartir`, `feature/extra`
-- [ ] Al terminar cada una: merge a `develop`; al cerrar versión: merge a `main`
-- [ ] Mensajes de commit claros (ej. `Añade pantalla de login con Firebase Auth`)
-- [ ] Hacer commits pequeños y frecuentes (el historial demuestra el trabajo continuo)
+- [x] Crear la rama de desarrollo: `git checkout -b develop`
+- [x] Una rama por funcionalidad: `feature/auth`, `feature/listas`, `feature/productos`, `feature/compartir`, `feature/extra`
+- [x] Al terminar cada una: merge a `develop`; al cerrar versión: merge a `main`
+- [x] Mensajes de commit claros (ej. `Añade pantalla de login con Firebase Auth`)
+- [x] Hacer commits pequeños y frecuentes (el historial demuestra el trabajo continuo)
 
 > Alternativa gráfica: Android Studio → *Git → Create Git Repository* y *Git → GitHub → Share Project on GitHub*.
 
 ---
 
-## 3. FASE 2 — Crear y conectar Firebase
+## 3. FASE 2 — Crear y conectar Firebase ✅
 
 ### 3.1 Crear el proyecto en Firebase
-- [ ] Entrar en <https://console.firebase.google.com> con tu cuenta de Google
-- [ ] **Add project** → nombre: `lista-compra-compartida`
-- [ ] Google Analytics: se puede desactivar (no hace falta)
+- [x] Entrar en <https://console.firebase.google.com> con tu cuenta de Google
+- [x] **Add project** → nombre: `lista-compra-compartida`
+- [x] Google Analytics: se puede desactivar (no hace falta)
 
 ### 3.2 Registrar la app Android
-- [ ] En el proyecto → **Add app → Android**
-- [ ] **Package name:** `org.insbaixcamp.listadelacompra` (debe coincidir exactamente con `applicationId`)
-- [ ] Nombre: Lista de la compra
-- [ ] **SHA-1 de depuración** (necesario para Auth): desde la carpeta del proyecto
+- [x] En el proyecto → **Add app → Android**
+- [x] **Package name:** `org.insbaixcamp.listadelacompra` (debe coincidir exactamente con `applicationId`)
+- [x] Nombre: Lista de la compra
+- [ ] *(Pospuesto, no necesario para e-mail/contraseña; solo para Google/teléfono)* **SHA-1 de depuración**: desde la carpeta del proyecto
   ```
   gradlew.bat signingReport
   ```
   Copiar el `SHA-1` de la variante `debug` y pegarlo en *Configuración del proyecto → Tus apps → Añadir huella digital*
-- [ ] Descargar `google-services.json` y colocarlo en `app/` (junto a `app/build.gradle.kts`)
-- [ ] ⚠️ Decidir si `google-services.json` se sube a GitHub. Para un proyecto de clase es habitual subirlo; si el repositorio es público, no incluir claves privadas y proteger los datos con reglas de Firestore
+- [x] Descargar `google-services.json` y colocarlo en `app/` (junto a `app/build.gradle.kts`)
+- [x] ⚠️ Decidir si `google-services.json` se sube a GitHub. Para un proyecto de clase es habitual subirlo; si el repositorio es público, no incluir claves privadas y proteger los datos con reglas de Firestore
 
 ### 3.3 Activar los servicios
-- [ ] **Authentication → Sign-in method → Correo electrónico/contraseña** → activar
-- [ ] **Firestore Database → Crear base de datos**
+- [x] **Authentication → Sign-in method → Correo electrónico/contraseña** → activar
+- [x] **Firestore Database → Crear base de datos**
   - Modo: producción (reglas cerradas, las definimos en la Fase 9)
   - Ubicación: `eur3 (europe-west)` o la más cercana
-- [ ] (Más adelante) **App Distribution** para repartir el APK
+- [x] (Más adelante) **App Distribution** para repartir el APK
 
 ### 3.4 Añadir Firebase a Gradle
 Editar los archivos del proyecto (usar el catálogo `gradle/libs.versions.toml`, como ya hace la plantilla):
@@ -112,11 +128,11 @@ Editar los archivos del proyecto (usar el catálogo `gradle/libs.versions.toml`,
 **`gradle/libs.versions.toml`** — añadir:
 ```toml
 [versions]
-googleServices = "4.4.x"        # comprobar la última versión estable
-firebaseBom = "34.x.x"          # comprobar la última versión estable
-navigationCompose = "2.9.x"     # comprobar la última versión estable
+googleServices = "4.5.0"
+firebaseBom = "34.19.0"
+navigationCompose = "2.10.2"
 lifecycleViewmodelCompose = "2.11.0"
-coroutinesPlayServices = "1.10.x"
+coroutinesPlayServices = "1.10.2"
 
 [libraries]
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
@@ -152,23 +168,26 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
 }
 ```
-- [ ] **Sync Gradle** y comprobar que compila
-- [ ] Añadir permiso de Internet en `AndroidManifest.xml`: `<uses-permission android:name="android.permission.INTERNET" />`
-- [ ] Ejecutar la app en el emulador/móvil y comprobar que no hay errores de Firebase en Logcat
-- [ ] Commit: `Conecta Firebase (Auth y Firestore)` y push
+- [x] **Sync Gradle** y comprobar que compila
+- [x] Añadir permiso de Internet en `AndroidManifest.xml`: `<uses-permission android:name="android.permission.INTERNET" />`
+- [x] Ejecutar la app en el emulador/móvil y comprobar que no hay errores de Firebase en Logcat
+- [x] Commit: `Conecta Firebase (Auth y Firestore)` y push
 
-> Nota: las versiones exactas hay que consultarlas al implementarlo (Android Studio puede ayudar con *Tools → Firebase*). El proyecto usa AGP 9.x, así que si algún plugin da error de compatibilidad se revisa en ese momento.
+> Versiones aplicadas y comprobadas en octubre de 2026. El proyecto compila y arranca con ellas (AGP 9.4.1).
+> Pendiente de commit en la rama `feature/firebase`.
 
 ---
 
-## 4. FASE 3 — Diseño y modelo de datos
+## 4. FASE 3 — Diseño y modelo de datos ✅
 
 ### 4.1 Bocetos (papel o Figma)
-- [ ] Login / Registro
-- [ ] Mis listas (propias + compartidas)
-- [ ] Detalle de lista (productos por categoría + completados)
-- [ ] Diálogo compartir / ver miembros
-- [ ] Estilo minimalista inspirado en Recordatorios de iOS
+- [x] Login / Registro
+- [x] Mis listas (propias + compartidas)
+- [x] Detalle de lista (productos por categoría + completados)
+- [x] Diálogo compartir / ver miembros
+- [x] Estilo minimalista inspirado en Recordatorios de iOS (paleta verde aplicada en `ui/theme`)
+
+> Los bocetos, el mapa de navegación y la paleta están en **`docs/DISENO.md`**.
 
 ### 4.2 Modelo en Firestore
 ```
@@ -208,49 +227,111 @@ ui/theme          → (ya existe)
 navigation        → Routes, NavGraph
 util              → AutoCategorizer, PredefinedProducts
 ```
-- [ ] Crear los paquetes y las `data class` del modelo (con valores por defecto, necesarios para que Firestore las deserialice)
-- [ ] Commit: `Añade modelo de datos y estructura de paquetes`
+- [x] Crear las `data class` del modelo en `data/model` (`User`, `ShoppingList`, `Category`, `Product`), con valores por defecto y `@DocumentId`, necesarios para que Firestore las deserialice
+- [x] El resto de paquetes (`repository`, `ui`, `navigation`, `util`) se crean junto con el primer archivo de cada uno, a partir de la Fase 4
+- [ ] Commit: `Añade modelo de datos y diseño de pantallas`
 
 > La plantilla trae `ic_home`, `ic_favorite` y `ic_account_box` y un `NavigationSuiteScaffold` de ejemplo en `MainActivity`. Se sustituirá por nuestra navegación.
 
 ---
 
-## 5. FASE 4 — Autenticación (`feature/auth`)
+## 5. FASE 4 — Autenticación (`feature/auth`) ✅
 
-- [ ] `AuthRepository`: registrar, iniciar sesión, cerrar sesión, usuario actual
-- [ ] Al registrarse, crear el documento `users/{uid}`
-- [ ] `AuthViewModel` con `StateFlow` de estado (cargando / error / éxito)
-- [ ] Pantallas `LoginScreen` y `RegisterScreen`
-- [ ] Validaciones: email válido, contraseña ≥ 6 caracteres, campos no vacíos
-- [ ] Mensajes de error en español
-- [ ] Navegación: si hay sesión → "Mis listas"; si no → Login
-- [ ] Botón de cerrar sesión
-- [ ] Probar: registro, login, sesión persistente tras cerrar la app
-- [ ] Merge a `develop`
+Rama: `feature/auth` (creada desde `develop`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | `AuthRepository` | Clase en `data/repository` con `FirebaseAuth` y `FirebaseFirestore`: `register`, `login`, `logout`, `currentUser`. Funciones `suspend` con `await()` (coroutines-play-services) |
+| 2 | Documento `users/{uid}` | Al registrarse se crea con `uid`, `email` y `displayName`. Si falla el guardado, se informa del error |
+| 3 | `AuthViewModel` | Un único `AuthUiState` (cargando, error, éxito) expuesto en un `StateFlow`. El ViewModel crea `AuthRepository()` por defecto, sin Hilt ni factory |
+| 4 | `LoginScreen` | Correo + contraseña (con mostrar/ocultar), botón y enlace a "Regístrate" |
+| 5 | `RegisterScreen` | **Nombre + correo + contraseña + repetir contraseña** |
+| 6 | Validaciones | Campos no vacíos, correo con formato válido, contraseña ≥ 6, las dos contraseñas coinciden. Se validan antes de llamar a Firebase |
+| 7 | Mensajes en español | Todos en `strings.xml`; los errores de Firebase (credenciales, correo ya usado, sin red) se traducen a mensajes propios |
+| 8 | Navegación | Navigation Compose: arranca en `login` si no hay sesión y en `lists` si la hay. Se sustituye el `NavigationSuiteScaffold` de la plantilla |
+| 9 | Cerrar sesión | **Icono en la barra superior de "Mis listas"**, con diálogo de confirmación |
+| 10 | Recuperar contraseña | ❌ No de momento (no es requisito; opcional al final) |
+| 11 | Pruebas | Registro, login, error por contraseña incorrecta, sesión persistente tras cerrar la app, cierre de sesión |
+| 12 | Merge | `feature/auth` → `develop` |
+
+Tareas:
+- [x] `AuthRepository`
+- [x] Creación de `users/{uid}` al registrarse
+- [x] `AuthViewModel` + `AuthUiState`
+- [x] `LoginScreen` y `RegisterScreen`
+- [x] Validaciones y mensajes en `strings.xml`
+- [x] Navegación según sesión (`Routes`, `NavGraph`) y `MainActivity` actualizado
+- [x] Pantalla provisional "Mis listas" con el botón de cerrar sesión
+- [x] Probar los casos del punto 11 (registro, login, errores, sesión persistente y cierre de sesión: todo correcto)
+- [x] Merge a `develop`
 
 ---
 
-## 6. FASE 5 — Gestión de listas (`feature/listas`)
+## 6. FASE 5 — Gestión de listas (`feature/listas`) ✅
 
-- [ ] `ListRepository`: escuchar listas del usuario en tiempo real, crear, renombrar, eliminar
-- [ ] `ListsScreen` con secciones *Mis listas* y *Compartidas conmigo*
-- [ ] Crear lista (nombre obligatorio; el creador es `ownerId` y está en `members`)
-- [ ] Renombrar; eliminar solo el propietario (con confirmación)
-- [ ] Estados: vacío, cargando, error
-- [ ] Al borrar una lista, borrar también sus categorías y productos
-- [ ] Merge a `develop`
+Rama: `feature/listas` (creada desde `develop`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | `ListRepository` | En `data/repository`. Escucha en tiempo real `lists.whereArrayContains("members", uid)` con un `callbackFlow`. Funciones `suspend`: crear, renombrar, eliminar |
+| 2 | Orden | **Por fecha de creación, las más recientes arriba.** Se ordena en la app (no en la consulta) para no necesitar un índice compuesto de Firestore. Una lista recién creada, con `createdAt` aún sin confirmar, se trata como la más nueva |
+| 3 | `ListsViewModel` | `ListsUiState` único (cargando, error, listas propias, compartidas) en un `StateFlow`; el ViewModel crea `ListRepository()` por defecto |
+| 4 | `ListsScreen` | Secciones **Mis listas** y **Compartidas conmigo** (según `ownerId == uid`); botón flotante (+); icono de cerrar sesión de la Fase 4 |
+| 5 | Crear lista | Diálogo con nombre obligatorio (sin espacios sobrantes, máximo 40 caracteres). `ownerId` = usuario actual y `members` = [su uid] |
+| 6 | Renombrar y eliminar | Menú ⋮ solo en las listas propias: *Renombrar* y *Eliminar*. Eliminar pide confirmación. Las listas compartidas no tienen menú hasta la Fase 7 (*Salir de la lista*) |
+| 7 | **Borrado en cascada** | **Desde la app, con un `WriteBatch`**: se leen `categories` y `products` de la lista y se borran junto con la lista en una sola operación atómica (límite de 500 documentos, de sobra). Sin Cloud Functions |
+| 8 | **Contador de productos** | **Sí, ahora.** Cada tarjeta muestra "N productos" con un listener en tiempo real sobre `lists/{id}/products` (0 hasta la Fase 6) |
+| 9 | **Propietario en compartidas** | **Sí.** En las compartidas se muestra "de {nombre}" leyendo `users/{ownerId}` una sola vez y guardándolo en memoria |
+| 10 | Estados | Cargando (hasta la primera respuesta), vacío ("Aún no tienes listas…") y error (mensaje con botón *Reintentar*) |
+| 11 | Navegación | Pulsar una tarjeta navega a `detail/{listId}`. Hasta la Fase 6 es una pantalla provisional con el nombre de la lista |
+| 12 | Textos | Todos en `strings.xml` |
+| 13 | Pruebas | Crear, renombrar, eliminar (comprobando en Firestore que se borra la lista y sus subcolecciones), lista vacía, orden, contador, sin red |
+| 14 | Merge | `feature/listas` → `develop` |
+
+Tareas:
+- [x] `ListRepository` (escuchar, crear, renombrar, eliminar con batch)
+- [x] `ListsViewModel` + `ListsUiState` (con contador y nombre del propietario)
+- [x] `ListsScreen` con secciones, tarjetas, FAB y estados
+- [x] Diálogos de crear, renombrar y confirmar eliminación
+- [x] Ruta `detail/{listId}` con pantalla provisional
+- [x] Textos en `strings.xml`
+- [x] Probar los casos del punto 13 (crear, renombrar, eliminar con borrado en cascada, lista vacía, orden, contador y detalle provisional: todo correcto)
+- [x] Merge a `develop`
 
 ---
 
-## 7. FASE 6 — Categorías y productos (`feature/productos`)
+## 7. FASE 6 — Categorías y productos (`feature/productos`) 🔄
 
-- [ ] `CategoryRepository` y `ProductRepository` con Flow en tiempo real
-- [ ] `ListDetailScreen`: productos agrupados por categoría
-- [ ] CRUD de categorías (nombre obligatorio)
-- [ ] CRUD de productos (nombre obligatorio, cantidad opcional)
-- [ ] Marcar/desmarcar completado (tachado, sin eliminar) y sección "Completados"
-- [ ] Al eliminar una categoría: sus productos pasan a "Sin categoría"
-- [ ] Probar todos los casos con un solo usuario
+Rama: `feature/productos` (creada desde `develop`, que ya incluye `feature/listas`). Decisiones tomadas punto por punto:
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | Repositorios | `CategoryRepository` y `ProductRepository` en `data/repository`, con `callbackFlow` en tiempo real sobre `lists/{listId}/categories` y `lists/{listId}/products`. Funciones `suspend` para crear, editar y eliminar |
+| 2 | ViewModel | `ListDetailViewModel` con un único `DetailUiState` (cargando, error, categorías, productos agrupados, completados). Recibe el `listId` por la ruta y también escucha el documento de la lista para mostrar su nombre actualizado |
+| 3 | Lista eliminada mientras está abierta | Si el propietario la borra, el detalle detecta que ya no existe y vuelve a "Mis listas" |
+| 4 | `ListDetailScreen` | Productos agrupados por categoría (cabecera con icono y nombre) y al final "Sin categoría". Sustituye la pantalla provisional |
+| 5 | **Añadir productos** | **Barra inferior de añadido rápido**: se escribe el nombre y se añade al instante (nombre obligatorio, sin espacios sobrantes). Entra en "Sin categoría"; en la Fase 8 se autoclasificará |
+| 6 | Editar producto | Al tocar un producto se abre un diálogo con nombre (obligatorio), cantidad (opcional, texto libre) y categoría (**campo desplegable con buscador**: al pulsarlo se abre una ventana con buscador, sin tildes ni mayúsculas, y la lista de categorías, incluida "Sin categoría") |
+| 7 | **Eliminar producto** | **Botón "Eliminar" en el diálogo de edición, con confirmación** |
+| 8 | **Categorías** | **Menú ⋮ en cada cabecera** (Renombrar / Eliminar) **y "Nueva categoría" en el menú superior**. Nombre obligatorio e icono (emoji) opcional |
+| 9 | Eliminar categoría | Confirmación; sus productos pasan a "Sin categoría" (se actualizan en un batch antes de borrar la categoría) |
+| 10 | **Completados** | **Se quedan en su categoría**, marcados con la casilla y con el nombre tachado y en gris. No se mueven a ninguna sección aparte: dentro de su categoría **bajan al final** (primero los pendientes y luego los completados, cada grupo en orden de creación). Al desmarcarlos vuelven a su posición. **Nunca se eliminan al completarlos** |
+| 11 | Permisos | Cualquier miembro de la lista puede ver, crear, editar y eliminar categorías y productos (ya lo permiten las reglas de Firestore) |
+| 12 | Estados | Cargando, lista vacía ("Añade tu primer producto") y error con *Reintentar* |
+| 13 | Textos | Todos en `strings.xml` |
+| 14 | Pruebas | Con un solo usuario: crear, editar y eliminar productos y categorías; completar y desmarcar; eliminar una categoría con productos; el contador de la tarjeta en "Mis listas"; eliminar la lista con contenido |
+| 15 | Merge | `feature/productos` → `develop` |
+
+Tareas:
+- [x] `CategoryRepository` y `ProductRepository` con Flow en tiempo real
+- [x] `ListDetailViewModel` + `DetailUiState` (agrupación por categoría)
+- [x] `ListDetailScreen`: productos por categoría, con los completados tachados al final de su categoría
+- [x] Barra inferior de añadido rápido
+- [x] Diálogo de producto (editar, cantidad, categoría, eliminar con confirmación)
+- [x] CRUD de categorías (menú ⋮, nueva categoría, eliminar con productos a "Sin categoría")
+- [x] Marcar/desmarcar completado
+- [x] Textos en `strings.xml`
+- [ ] Probar los casos del punto 14 *(código escrito; pendiente de compilar y probar)*
 - [ ] Merge a `develop`
 
 ---
