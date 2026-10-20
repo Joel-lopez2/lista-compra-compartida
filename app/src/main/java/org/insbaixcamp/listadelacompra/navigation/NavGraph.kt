@@ -3,12 +3,15 @@ package org.insbaixcamp.listadelacompra.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import org.insbaixcamp.listadelacompra.data.repository.AuthRepository
 import org.insbaixcamp.listadelacompra.ui.auth.LoginScreen
 import org.insbaixcamp.listadelacompra.ui.auth.RegisterScreen
+import org.insbaixcamp.listadelacompra.ui.detail.ListDetailScreen
 import org.insbaixcamp.listadelacompra.ui.lists.ListsScreen
 
 @Composable
@@ -49,7 +52,29 @@ fun NavGraph(
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.LISTS) { inclusive = true }
                     }
+                },
+                onOpenList = { list ->
+                    navController.navigate(Routes.detail(list.id, list.name))
                 }
+            )
+        }
+
+        composable(
+            route = Routes.DETAIL,
+            arguments = listOf(
+                navArgument(Routes.DETAIL_ARG_ID) { type = NavType.StringType },
+                navArgument(Routes.DETAIL_ARG_NAME) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString(Routes.DETAIL_ARG_ID).orEmpty()
+            val listName = backStackEntry.arguments?.getString(Routes.DETAIL_ARG_NAME).orEmpty()
+            ListDetailScreen(
+                listId = listId,
+                listName = listName,
+                onBack = { navController.popBackStack() }
             )
         }
     }
