@@ -31,8 +31,9 @@ class CategoryRepository(
         awaitClose { registration.remove() }
     }
 
-    suspend fun createCategory(listId: String, name: String, icon: String) {
-        categories(listId).add(mapOf("name" to name, "icon" to icon)).await()
+    /** Crea la categoria y devuelve su id. */
+    suspend fun createCategory(listId: String, name: String, icon: String): String {
+        return categories(listId).add(mapOf("name" to name, "icon" to icon)).await().id
     }
 
     suspend fun updateCategory(listId: String, categoryId: String, name: String, icon: String) {

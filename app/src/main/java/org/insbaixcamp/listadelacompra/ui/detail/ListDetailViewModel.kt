@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.insbaixcamp.listadelacompra.R
 import org.insbaixcamp.listadelacompra.data.model.Category
 import org.insbaixcamp.listadelacompra.data.model.Product
@@ -22,6 +24,7 @@ import org.insbaixcamp.listadelacompra.data.repository.CategoryRepository
 import org.insbaixcamp.listadelacompra.data.repository.ListRepository
 import org.insbaixcamp.listadelacompra.data.repository.ProductRepository
 import org.insbaixcamp.listadelacompra.navigation.Routes
+import org.insbaixcamp.listadelacompra.util.AutoCategorizer
 
 /** Una categoria con sus productos (pendientes y completados). category = null significa "Sin categoria". */
 data class CategoryGroup(
@@ -141,10 +144,37 @@ class ListDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
     // ---- Productos ----
 
+    /**
+     * Anade un producto. Si el usuario no ha elegido categoria, se clasifica solo
+     * (extra: autoclasificacion): "leche" -> "Lácteos". La categoria se reutiliza si ya
+     * existe en la lista y, si no, se crea. Si no se reconoce el producto, queda "Sin categoria".
+     */
     fun addProduct(name: String, categoryId: String) {
         val clean = name.trim()
         if (clean.isBlank()) return
-        runAction { productRepository.addProduct(listId, clean, categoryId) }
+        runAction {
+            val finalCategoryId = categoryId.ifBlank { autoCategoryId(clean) }
+            productRepository.addProduct(listId, clean, finalCategoryId)
+        }
+    }
+
+    // Categorias creadas automaticamente en esta sesion (nombre normalizado -> id).
+    // Evita duplicarlas si se anaden varios productos seguidos antes de que Firestore responda.
+    private val autoCreated = mutableMapOf<String, String>()
+    private val autoMutex = Mutex()
+
+    /** Devuelve el id de la categoria sugerida para el producto ("" si no se reconoce). */
+    private suspend fun autoCategoryId(productName: String): String {
+        val suggestion = AutoCategorizer.suggest(productName) ?: return ""
+        val key = AutoCategorizer.normalize(suggestion.name)
+        return autoMutex.withLock {
+            val existing = _uiState.value.categories
+                .firstOrNull { AutoCategorizer.normalize(it.name) == key }
+            existing?.id
+                ?: autoCreated[key]
+                ?: categoryRepository.createCategory(listId, suggestion.name, suggestion.icon)
+                    .also { autoCreated[key] = it }
+        }
     }
 
     fun toggleCompleted(product: Product) {
