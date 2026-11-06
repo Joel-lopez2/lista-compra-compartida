@@ -24,6 +24,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -89,7 +91,6 @@ fun ListDetailScreen(
     var categoryToDelete by remember { mutableStateOf<Category?>(null) }
     var productToEdit by remember { mutableStateOf<Product?>(null) }
     var productToDelete by remember { mutableStateOf<Product?>(null) }
-    var topMenuExpanded by remember { mutableStateOf(false) }
 
     // Si el propietario elimina la lista mientras la tenemos abierta, volvemos atras
     LaunchedEffect(uiState.listDeleted) {
@@ -125,39 +126,14 @@ fun ListDetailScreen(
                 },
                 actions = {
                     if (!uiState.isLoading && uiState.errorRes == null) {
-                        Box {
-                            IconButton(onClick = { topMenuExpanded = true }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_more_vert),
-                                    contentDescription = stringResource(R.string.more_options)
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = topMenuExpanded,
-                                onDismissRequest = { topMenuExpanded = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.new_category)) },
-                                    onClick = {
-                                        topMenuExpanded = false
-                                        showNewCategory = true
-                                    }
-                                )
-                                // El propietario comparte; los demas solo ven los miembros
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            stringResource(
-                                                if (uiState.isOwner) R.string.share_list else R.string.members
-                                            )
-                                        )
-                                    },
-                                    onClick = {
-                                        topMenuExpanded = false
-                                        showShare = true
-                                    }
-                                )
-                            }
+                        // El propietario comparte; los demas solo ven los miembros
+                        TextButton(onClick = { showShare = true }) {
+                            Text(
+                                text = stringResource(
+                                    if (uiState.isOwner) R.string.share else R.string.members
+                                ),
+                                color = style.onColor
+                            )
                         }
                     }
                 },
@@ -171,7 +147,12 @@ fun ListDetailScreen(
         },
         bottomBar = {
             if (!uiState.isLoading && uiState.errorRes == null) {
-                AddProductBar(style = style, onAdd = { viewModel.addProduct(it) })
+                AddProductBar(
+                    style = style,
+                    categories = uiState.categories,
+                    onAdd = { name, categoryId -> viewModel.addProduct(name, categoryId) },
+                    onNewCategory = { showNewCategory = true }
+                )
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -213,13 +194,15 @@ fun ListDetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(style.emoji, fontSize = 64.sp)
+                    Text(uiState.listIcon.ifBlank { "\uD83D\uDED2" }, fontSize = 64.sp)
                     Spacer(Modifier.height(12.dp))
                     Text(
                         text = stringResource(R.string.detail_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
                     )
+                    Spacer(Modifier.height(16.dp))
+                    NewCategoryButton(onClick = { showNewCategory = true })
                 }
             }
 
@@ -229,6 +212,12 @@ fun ListDetailScreen(
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    item(key = "new_category") {
+                        NewCategoryButton(
+                            onClick = { showNewCategory = true },
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
                     item(key = "progress") {
                         ProgressHeader(
                             done = uiState.doneCount,
@@ -343,216 +332,5 @@ fun ListDetailScreen(
             },
             onDismiss = { productToDelete = null }
         )
-    }
-}
-
-/** Resumen de progreso de la lista: "N de M comprados" y una barra. */
-@Composable
-private fun ProgressHeader(done: Int, total: Int, style: ListStyle) {
-    if (total == 0) return
-    Column(modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 4.dp)) {
-        Text(
-            text = if (done == total) {
-                stringResource(R.string.list_all_done)
-            } else {
-                stringResource(R.string.list_progress, done, total)
-            },
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(Modifier.height(8.dp))
-        LinearProgressIndicator(
-            progress = { done.toFloat() / total },
-            color = style.color,
-            trackColor = style.color.copy(alpha = 0.25f),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp)
-                .clip(CircleShape)
-        )
-    }
-}
-
-/** Barra inferior para anadir productos rapidamente. */
-@Composable
-private fun AddProductBar(style: ListStyle, onAdd: (String) -> Unit) {
-    var text by rememberSaveable { mutableStateOf("") }
-
-    fun submit() {
-        if (text.isNotBlank()) {
-            onAdd(text)
-            text = ""
-        }
-    }
-
-    Surface(tonalElevation = 3.dp, color = MaterialTheme.colorScheme.surface) {
-        Row(
-            modifier = Modifier
-                .navigationBarsPadding()
-                .imePadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { if (it.length <= 40) text = it },
-                placeholder = { Text(stringResource(R.string.add_product_hint)) },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(onDone = { submit() }),
-                shape = RoundedCornerShape(28.dp),
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(Modifier.size(8.dp))
-            FilledIconButton(
-                onClick = { submit() },
-                enabled = text.isNotBlank(),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = style.color,
-                    contentColor = style.onColor
-                ),
-                modifier = Modifier.size(52.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_add),
-                    contentDescription = stringResource(R.string.add_product)
-                )
-            }
-        }
-    }
-}
-
-/** Cabecera de una categoria. category = null es "Sin categoria" (sin menu). */
-@Composable
-private fun CategoryHeader(
-    category: Category?,
-    style: ListStyle,
-    onRename: () -> Unit,
-    onDelete: () -> Unit
-) {
-    var menuExpanded by remember { mutableStateOf(false) }
-    val title = if (category == null) {
-        stringResource(R.string.uncategorized)
-    } else {
-        listOf(category.icon, category.name).filter { it.isNotBlank() }.joinToString(" ")
-    }
-    val pillColor = style.color.copy(alpha = 0.20f)
-        .compositeOver(MaterialTheme.colorScheme.background)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Etiqueta con forma de pastilla, teñida con el color de la lista
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(pillColor)
-                .padding(horizontal = 14.dp, vertical = 6.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        Spacer(Modifier.weight(1f))
-        if (category != null) {
-            Box {
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_more_vert),
-                        contentDescription = stringResource(R.string.more_options),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.rename)) },
-                        onClick = {
-                            menuExpanded = false
-                            onRename()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.delete)) },
-                        onClick = {
-                            menuExpanded = false
-                            onDelete()
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProductRow(
-    product: Product,
-    style: ListStyle,
-    modifier: Modifier = Modifier,
-    onToggle: () -> Unit,
-    onClick: () -> Unit
-) {
-    val done = product.completed
-    val surface = MaterialTheme.colorScheme.surface
-    // El fondo se tiñe suavemente al marcar el producto como comprado
-    val background by animateColorAsState(
-        targetValue = if (done) style.color.copy(alpha = 0.12f).compositeOver(surface) else surface,
-        label = "productBackground"
-    )
-
-    Surface(
-        color = background,
-        shape = RoundedCornerShape(16.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = done,
-                onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = style.color,
-                    checkmarkColor = style.onColor,
-                    uncheckedColor = style.color
-                )
-            )
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp, top = 8.dp, bottom = 8.dp)
-            ) {
-                Text(
-                    text = product.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = if (done) TextDecoration.LineThrough else null,
-                    color = if (done) MaterialTheme.colorScheme.onSurfaceVariant
-                    else MaterialTheme.colorScheme.onSurface
-                )
-                if (product.quantity.isNotBlank()) {
-                    Text(
-                        text = product.quantity,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
     }
 }

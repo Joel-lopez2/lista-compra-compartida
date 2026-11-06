@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.insbaixcamp.listadelacompra.R
 import org.insbaixcamp.listadelacompra.data.model.ShoppingList
+import org.insbaixcamp.listadelacompra.data.repository.JoinResult
 import org.insbaixcamp.listadelacompra.data.repository.ListRepository
 import org.insbaixcamp.listadelacompra.data.repository.ShareRepository
 
@@ -145,16 +146,16 @@ class ListsViewModel(
         }
     }
 
-    fun createList(name: String) {
+    fun createList(name: String, icon: String) {
         val clean = name.trim().take(MAX_LIST_NAME_LENGTH)
         if (clean.isBlank()) return
-        runAction { repository.createList(clean) }
+        runAction { repository.createList(clean, icon) }
     }
 
-    fun renameList(listId: String, name: String) {
+    fun updateList(listId: String, name: String, icon: String) {
         val clean = name.trim().take(MAX_LIST_NAME_LENGTH)
         if (clean.isBlank()) return
-        runAction { repository.renameList(listId, clean) }
+        runAction { repository.updateList(listId, clean, icon) }
     }
 
     fun deleteList(listId: String) {
@@ -165,6 +166,24 @@ class ListsViewModel(
     fun leaveList(listId: String) {
         val uid = repository.currentUid ?: return
         runAction { shareRepository.removeMember(listId, uid) }
+    }
+
+    /** El usuario se une a una lista con el codigo que le han pasado. */
+    fun joinList(code: String) {
+        viewModelScope.launch {
+            val message = try {
+                when (shareRepository.joinWithCode(code)) {
+                    JoinResult.JOINED -> R.string.join_success
+                    JoinResult.ALREADY_MEMBER -> R.string.join_already_member
+                    JoinResult.NOT_FOUND -> R.string.join_code_not_found
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                R.string.error_action_failed
+            }
+            _uiState.update { it.copy(messageRes = message) }
+        }
     }
 
     fun messageShown() {

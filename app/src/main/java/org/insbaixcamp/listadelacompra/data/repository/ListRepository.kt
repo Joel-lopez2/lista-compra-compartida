@@ -12,6 +12,10 @@ import org.insbaixcamp.listadelacompra.data.model.ShoppingList
 
 /**
  * Acceso a las listas de la compra (coleccion "lists" de Firestore).
+ *
+ * Cada lista tiene un codigo de 6 caracteres. Para poder buscar una lista por
+ * su codigo sin ser miembro, se guarda tambien en la coleccion "codes":
+ *   codes/{codigo} = { listId, ownerId }
  */
 class ListRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
@@ -19,6 +23,7 @@ class ListRepository(
 ) {
 
     private val lists = db.collection("lists")
+    private val codes = db.collection("codes")
 
     /** uid del usuario con la sesion iniciada. */
     val currentUid: String?
@@ -79,34 +84,58 @@ class ListRepository(
         return name.ifBlank { doc.getString("email") }
     }
 
-    /** Crea una lista: el usuario actual es el propietario y el primer miembro. */
-    suspend fun createList(name: String) {
+    /** Crea una lista (con su codigo) y el usuario actual es el propietario y el primer miembro. */
+    suspend fun createList(name: String, icon: String) {
         val uid = currentUid ?: throw IllegalStateException("No hay sesion iniciada")
-        val data = hashMapOf(
-            "name" to name,
-            "ownerId" to uid,
-            "members" to listOf(uid),
-            "createdAt" to FieldValue.serverTimestamp()
+        val code = newUniqueCode()
+        val listRef = lists.document()   // id nuevo, todavia sin guardar
+
+        // La lista y su codigo se guardan a la vez (o las dos cosas o ninguna)
+        val batch = db.batch()
+        batch.set(
+            listRef,
+            hashMapOf(
+                "name" to name,
+                "icon" to icon,
+                "code" to code,
+                "ownerId" to uid,
+                "members" to listOf(uid),
+                "createdAt" to FieldValue.serverTimestamp()
+            )
         )
-        lists.add(data).await()
+        batch.set(codes.document(code), hashMapOf("listId" to listRef.id, "ownerId" to uid))
+        batch.commit().await()
     }
 
-    suspend fun renameList(listId: String, name: String) {
-        lists.document(listId).update("name", name).await()
+    /** Cambia el nombre y el icono de una lista. */
+    suspend fun updateList(listId: String, name: String, icon: String) {
+        lists.document(listId).update("name", name, "icon", icon).await()
+    }
+
+    /** Las listas creadas antes de existir los codigos no tienen uno: se les crea aqui. */
+    suspend fun createCodeForList(listId: String) {
+        val uid = currentUid ?: throw IllegalStateException("No hay sesion iniciada")
+        val code = newUniqueCode()
+        val batch = db.batch()
+        batch.set(codes.document(code), hashMapOf("listId" to listId, "ownerId" to uid))
+        batch.update(lists.document(listId), "code", code)
+        batch.commit().await()
     }
 
     /**
-     * Elimina una lista junto con todas sus categorias y productos.
+     * Elimina una lista junto con todas sus categorias, productos y su codigo.
      * Firestore no borra las subcolecciones solo, asi que se borran aqui con
      * batches (maximo 500 operaciones cada uno). La lista va en el ultimo.
      */
     suspend fun deleteList(listId: String) {
         val listRef = lists.document(listId)
+        val code = listRef.get().await().getString("code").orEmpty()
         val categories = listRef.collection("categories").get().await()
         val products = listRef.collection("products").get().await()
 
         val refs = categories.documents.map { it.reference } +
             products.documents.map { it.reference } +
+            (if (code.isNotBlank()) listOf(codes.document(code)) else emptyList()) +
             listRef
 
         refs.chunked(BATCH_SIZE).forEach { chunk ->
@@ -116,7 +145,23 @@ class ListRepository(
         }
     }
 
+    /** Genera un codigo que no use ninguna otra lista. */
+    private suspend fun newUniqueCode(): String {
+        repeat(10) {
+            val code = generateCode()
+            if (!codes.document(code).get().await().exists()) return code
+        }
+        throw IllegalStateException("No se ha podido generar un codigo")
+    }
+
+    /** Codigo de 6 caracteres en mayusculas, sin la letra O ni el numero 0 (se confunden). */
+    private fun generateCode(): String {
+        return (1..CODE_LENGTH).map { CODE_CHARS.random() }.joinToString("")
+    }
+
     private companion object {
         const val BATCH_SIZE = 400
+        const val CODE_LENGTH = 6
+        const val CODE_CHARS = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789"
     }
 }

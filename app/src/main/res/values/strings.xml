@@ -27,7 +27,6 @@
     <string name="error_generic">Ha ocurrido un error. Inténtalo de nuevo.</string>
 
     <!-- Mis listas (provisional hasta la Fase 5) -->
-    <string name="lists_title">Mis listas</string>
     <string name="logout">Cerrar sesión</string>
     <string name="logout_dialog_message">¿Quieres cerrar la sesión?</string>
     <string name="accept">Aceptar</string>
@@ -35,14 +34,9 @@
     <!-- Gestion de listas -->
     <string name="section_my_lists">Mis listas</string>
     <string name="section_shared">Compartidas conmigo</string>
-    <string name="lists_empty">Aún no tienes listas.\nPulsa + para crear la primera.</string>
-    <plurals name="product_count">
-        <item quantity="one">%d producto</item>
-        <item quantity="other">%d productos</item>
-    </plurals>
+    <string name="lists_empty">Aún no tienes listas.\nPulsa «Nueva lista» para crear la primera o «Unirse» si te han pasado un código.</string>
     <string name="list_owner">de %1$s</string>
     <string name="new_list">Nueva lista</string>
-    <string name="rename_list">Renombrar lista</string>
     <string name="list_name_label">Nombre de la lista</string>
     <string name="create">Crear</string>
     <string name="save">Guardar</string>
@@ -65,7 +59,6 @@
     <string name="new_category">Nueva categoría</string>
     <string name="rename_category">Renombrar categoría</string>
     <string name="category_name_label">Nombre de la categoría</string>
-    <string name="category_icon_label">Icono (emoji, opcional)</string>
     <string name="edit_product">Editar producto</string>
     <string name="product_name_label">Nombre del producto</string>
     <string name="product_quantity_label">Cantidad (opcional)</string>
@@ -83,9 +76,6 @@
     <string name="share">Compartir</string>
     <string name="members">Miembros</string>
     <string name="members_title">Miembros</string>
-    <string name="share_email_label">Correo de la persona</string>
-    <string name="share_button">Compartir</string>
-    <string name="share_success">Lista compartida con %1$s.</string>
     <string name="owner_tag">Propietario</string>
     <string name="you_tag">tú</string>
     <string name="unknown_user">Usuario</string>
@@ -102,10 +92,6 @@
     </plurals>
 
     <!-- Errores al compartir -->
-    <string name="error_share_invalid_email">Escribe un correo válido.</string>
-    <string name="error_user_not_found">Ese usuario no está registrado.</string>
-    <string name="error_already_member">Ya tiene acceso a esta lista.</string>
-    <string name="error_share_self">No puedes compartir una lista contigo mismo.</string>
     <string name="error_loading_members">No se han podido cargar los miembros.</string>
     <!-- Diseno -->
     <string name="auth_login_subtitle">Tus listas, siempre contigo</string>
@@ -116,4 +102,25 @@
     <string name="list_progress">%1$d de %2$d comprados</string>
     <string name="list_no_products">Aún sin productos</string>
     <string name="list_all_done">¡Todo comprado! 🎉</string>
+
+    <!-- Mejoras: codigo para compartir, iconos y categorias -->
+    <string name="edit">Editar</string>
+    <string name="edit_list">Editar lista</string>
+    <string name="icon_label">Icono (opcional)</string>
+    <string name="no_icon">Sin icono</string>
+    <string name="join_button">Unirse</string>
+    <string name="join_title">Unirse a una lista</string>
+    <string name="join_help">Escribe el código de 6 caracteres que te ha dado el propietario de la lista.</string>
+    <string name="join_code_label">Código de la lista</string>
+    <string name="join_confirm">Unirme</string>
+    <string name="join_success">Te has unido a la lista 🎉</string>
+    <string name="join_already_member">Ya tienes acceso a esta lista.</string>
+    <string name="join_code_not_found">No existe ninguna lista con ese código.</string>
+    <string name="share_code_title">Código para compartir</string>
+    <string name="share_code_help">Quien tenga este código puede unirse a la lista desde «Unirse».</string>
+    <string name="copy_code">Copiar</string>
+    <string name="send_code">Enviar</string>
+    <string name="code_copied">Código copiado</string>
+    <string name="share_code_text">Únete a mi lista «%1$s» en Lista de la compra con el código: %2$s</string>
+    <string name="create_category_button">＋ Nueva categoría</string>
 </resources>

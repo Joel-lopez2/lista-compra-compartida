@@ -34,6 +34,7 @@ data class DetailUiState(
     val isLoading: Boolean = true,
     @StringRes val errorRes: Int? = null,
     val listName: String = "",
+    val listIcon: String = "",
     val isOwner: Boolean = false,
     val categories: List<Category> = emptyList(),
     val groups: List<CategoryGroup> = emptyList(),
@@ -131,6 +132,7 @@ class ListDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         return DetailUiState(
             isLoading = false,
             listName = list.name,
+            listIcon = list.icon,
             isOwner = list.ownerId == listRepository.currentUid,
             categories = sortedCategories,
             groups = groups
@@ -139,10 +141,10 @@ class ListDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
     // ---- Productos ----
 
-    fun addProduct(name: String) {
+    fun addProduct(name: String, categoryId: String) {
         val clean = name.trim()
         if (clean.isBlank()) return
-        runAction { productRepository.addProduct(listId, clean) }
+        runAction { productRepository.addProduct(listId, clean, categoryId) }
     }
 
     fun toggleCompleted(product: Product) {

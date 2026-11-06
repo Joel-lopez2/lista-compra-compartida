@@ -76,6 +76,7 @@ fun ListsScreen(
 
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
+    var showJoinDialog by rememberSaveable { mutableStateOf(false) }
     var listToRename by remember { mutableStateOf<ShoppingList?>(null) }
     var listToDelete by remember { mutableStateOf<ShoppingList?>(null) }
     var listToShare by remember { mutableStateOf<ShoppingList?>(null) }
@@ -111,6 +112,9 @@ fun ListsScreen(
                     }
                 },
                 actions = {
+                    TextButton(onClick = { showJoinDialog = true }) {
+                        Text(stringResource(R.string.join_button))
+                    }
                     IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_logout),
@@ -216,26 +220,38 @@ fun ListsScreen(
     // ---- Dialogos ----
 
     if (showCreateDialog) {
-        ListNameDialog(
+        ListDialog(
             title = stringResource(R.string.new_list),
             initialName = "",
+            initialIcon = "",
             confirmLabel = stringResource(R.string.create),
-            onConfirm = { name ->
+            onConfirm = { name, icon ->
                 showCreateDialog = false
-                viewModel.createList(name)
+                viewModel.createList(name, icon)
             },
             onDismiss = { showCreateDialog = false }
         )
     }
 
+    if (showJoinDialog) {
+        JoinListDialog(
+            onConfirm = { code ->
+                showJoinDialog = false
+                viewModel.joinList(code)
+            },
+            onDismiss = { showJoinDialog = false }
+        )
+    }
+
     listToRename?.let { list ->
-        ListNameDialog(
-            title = stringResource(R.string.rename_list),
+        ListDialog(
+            title = stringResource(R.string.edit_list),
             initialName = list.name,
+            initialIcon = list.icon,
             confirmLabel = stringResource(R.string.save),
-            onConfirm = { name ->
+            onConfirm = { name, icon ->
                 listToRename = null
-                viewModel.renameList(list.id, name)
+                viewModel.updateList(list.id, name, icon)
             },
             onDismiss = { listToRename = null }
         )
@@ -325,154 +341,6 @@ private fun CenteredMessage(
         )
         if (action != null) {
             Box(Modifier.padding(top = 16.dp)) { action() }
-        }
-    }
-}
-
-@Composable
-private fun ListCard(
-    item: ListItem,
-    isOwner: Boolean,
-    onClick: () -> Unit,
-    onShare: () -> Unit,
-    onRename: () -> Unit,
-    onDelete: () -> Unit,
-    onLeave: () -> Unit
-) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
-    // Cada lista tiene su color y emoji (salen del id, asi todos la ven igual)
-    val style = ListColors.forId(item.list.id)
-    val accent = style.color
-    val container = accent.copy(alpha = 0.16f).compositeOver(MaterialTheme.colorScheme.surface)
-    val total = item.productCount
-    val done = item.completedCount
-
-    Card(
-        onClick = onClick,
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = container),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.padding(start = 16.dp, top = 14.dp, bottom = 14.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Insignia circular con el emoji de la lista
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .clip(CircleShape)
-                    .background(accent),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(style.emoji, fontSize = 26.sp)
-            }
-            Spacer(Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.list.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = when {
-                        total == 0 -> stringResource(R.string.list_no_products)
-                        done == total -> stringResource(R.string.list_all_done)
-                        else -> stringResource(R.string.list_progress, done, total)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (total > 0) {
-                    Spacer(Modifier.height(6.dp))
-                    LinearProgressIndicator(
-                        progress = { done.toFloat() / total },
-                        color = accent,
-                        trackColor = accent.copy(alpha = 0.25f),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(CircleShape)
-                    )
-                }
-                // El propietario ve con cuanta gente ha compartido la lista
-                val others = item.list.members.size - 1
-                if (isOwner && others > 0) {
-                    Text(
-                        text = "👥 " + pluralStringResource(R.plurals.shared_with_count, others, others),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                }
-                if (!isOwner) {
-                    val owner = item.ownerName
-                    Text(
-                        text = if (owner != null) {
-                            "👥 " + stringResource(R.string.list_owner, owner)
-                        } else {
-                            "👥"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp)
-                    )
-                }
-            }
-
-            // Menu: el propietario puede compartir, renombrar y eliminar;
-            // un invitado puede ver los miembros y salir de la lista
-            Box {
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_more_vert),
-                        contentDescription = stringResource(R.string.more_options)
-                    )
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(stringResource(if (isOwner) R.string.share else R.string.members))
-                        },
-                        onClick = {
-                            menuExpanded = false
-                            onShare()
-                        }
-                    )
-                    if (isOwner) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.rename)) },
-                            onClick = {
-                                menuExpanded = false
-                                onRename()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete)) },
-                            onClick = {
-                                menuExpanded = false
-                                onDelete()
-                            }
-                        )
-                    } else {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.leave_list)) },
-                            onClick = {
-                                menuExpanded = false
-                                onLeave()
-                            }
-                        )
-                    }
-                }
-            }
         }
     }
 }

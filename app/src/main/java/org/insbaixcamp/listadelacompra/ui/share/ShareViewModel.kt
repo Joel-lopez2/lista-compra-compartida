@@ -1,6 +1,5 @@
 package org.insbaixcamp.listadelacompra.ui.share
 
-import android.util.Patterns
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,10 +22,10 @@ data class ShareUiState(
     val listName: String = "",
     val ownerId: String = "",
     val currentUid: String = "",
+    val code: String = "",                  // codigo para unirse a la lista
     val members: List<User> = emptyList(),  // el propietario primero
-    val isWorking: Boolean = false,         // buscando, anadiendo o quitando
+    val isWorking: Boolean = false,         // quitando a alguien o saliendo
     @StringRes val errorRes: Int? = null,
-    val sharedWith: String? = null,         // nombre de la persona con la que se acaba de compartir
     val left: Boolean = false               // el usuario ya no tiene acceso a la lista
 ) {
     val isOwner: Boolean
@@ -45,10 +44,14 @@ class ShareViewModel(private val listId: String) : ViewModel() {
     // Usuarios ya consultados (uid -> usuario) para no repetir lecturas
     private val userCache = mutableMapOf<String, User>()
 
+    // Para crear el codigo de una lista antigua solo una vez
+    private var creatingCode = false
+
     init {
         viewModelScope.launch {
             listRepository.observeList(listId)
                 .catch { error ->
+                    // Sin permiso = ya no somos miembros de la lista
                     val lostAccess = error is FirebaseFirestoreException &&
                         error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED
                     _uiState.update {
@@ -62,6 +65,14 @@ class ShareViewModel(private val listId: String) : ViewModel() {
                         _uiState.update { it.copy(isLoading = false, left = true) }
                         return@collect
                     }
+
+                    // Las listas antiguas no tienen codigo: lo crea el propietario al abrir el dialogo
+                    if (list.code.isBlank() && list.ownerId == currentUid && !creatingCode) {
+                        creatingCode = true
+                        runAction { listRepository.createCodeForList(listId) }
+                    }
+
+                    // Propietario primero y despues los demas por nombre
                     val users = list.members.map { uid -> loadUser(uid) }
                     val sorted = users.sortedWith(
                         compareByDescending<User> { it.uid == list.ownerId }
@@ -72,6 +83,7 @@ class ShareViewModel(private val listId: String) : ViewModel() {
                             isLoading = false,
                             listName = list.name,
                             ownerId = list.ownerId,
+                            code = list.code,
                             members = sorted
                         )
                     }
@@ -79,6 +91,7 @@ class ShareViewModel(private val listId: String) : ViewModel() {
         }
     }
 
+    /** Lee un usuario de Firestore (o de la memoria si ya lo habiamos leido). */
     private suspend fun loadUser(uid: String): User {
         userCache[uid]?.let { return it }
         val user = try {
@@ -88,46 +101,10 @@ class ShareViewModel(private val listId: String) : ViewModel() {
         } catch (e: Exception) {
             null
         }
-        // Si no se puede leer, se muestra un usuario sin datos (y se volvera a intentar luego)
+        // Si no se puede leer, se muestra un usuario sin datos
         if (user == null) return User(uid = uid)
         userCache[uid] = user
         return user
-    }
-
-    /** Comparte la lista con la persona que tenga ese correo. */
-    fun share(emailInput: String) {
-        val state = _uiState.value
-        if (!state.isOwner || state.isWorking) return
-
-        val email = emailInput.trim().lowercase()
-        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            _uiState.update { it.copy(errorRes = R.string.error_share_invalid_email, sharedWith = null) }
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isWorking = true, errorRes = null, sharedWith = null) }
-            try {
-                val user = shareRepository.findUserByEmail(email)
-                val error = when {
-                    user == null -> R.string.error_user_not_found
-                    user.uid == currentUid -> R.string.error_share_self
-                    state.members.any { it.uid == user.uid } -> R.string.error_already_member
-                    else -> null
-                }
-                if (error != null || user == null) {
-                    _uiState.update { it.copy(isWorking = false, errorRes = error) }
-                } else {
-                    shareRepository.addMember(listId, user.uid)
-                    userCache[user.uid] = user
-                    _uiState.update { it.copy(isWorking = false, sharedWith = displayName(user)) }
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isWorking = false, errorRes = R.string.error_action_failed) }
-            }
-        }
     }
 
     /** El propietario quita a un miembro. */
@@ -147,16 +124,10 @@ class ShareViewModel(private val listId: String) : ViewModel() {
         }
     }
 
-    /** Borra el error y el aviso de exito (por ejemplo cuando el usuario vuelve a escribir). */
-    fun clearFeedback() {
-        _uiState.update {
-            if (it.errorRes != null || it.sharedWith != null) it.copy(errorRes = null, sharedWith = null) else it
-        }
-    }
-
+    /** Ejecuta una accion de Firestore y muestra un error si falla. */
     private fun runAction(action: suspend () -> Unit) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isWorking = true, errorRes = null, sharedWith = null) }
+            _uiState.update { it.copy(isWorking = true, errorRes = null) }
             try {
                 action()
                 _uiState.update { it.copy(isWorking = false) }
