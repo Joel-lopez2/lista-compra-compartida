@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,11 +32,11 @@ import androidx.compose.ui.unit.dp
 import org.insbaixcamp.listadelacompra.R
 import org.insbaixcamp.listadelacompra.data.model.Category
 import org.insbaixcamp.listadelacompra.data.model.Product
+import org.insbaixcamp.listadelacompra.ui.components.IconPicker
 import java.text.Normalizer
 
 private const val MAX_NAME_LENGTH = 40
 private const val MAX_QUANTITY_LENGTH = 20
-private const val MAX_ICON_LENGTH = 4
 
 /** Dialogo para crear una categoria o renombrarla (el nombre es obligatorio, el icono no). */
 @Composable
@@ -53,7 +55,10 @@ fun CategoryDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { if (it.length <= MAX_NAME_LENGTH) name = it },
@@ -62,13 +67,7 @@ fun CategoryDialog(
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                     shape = RoundedCornerShape(12.dp)
                 )
-                OutlinedTextField(
-                    value = icon,
-                    onValueChange = { if (it.length <= MAX_ICON_LENGTH) icon = it },
-                    label = { Text(stringResource(R.string.category_icon_label)) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                IconPicker(selected = icon, onSelected = { icon = it })
             }
         },
         confirmButton = {
@@ -149,7 +148,7 @@ fun ProductDialog(
 }
 
 /** Texto de una categoria: icono (si lo tiene) + nombre. */
-private fun categoryLabel(category: Category): String =
+fun categoryLabel(category: Category): String =
     listOf(category.icon, category.name).filter { it.isNotBlank() }.joinToString(" ")
 
 /** Pasa a minusculas y quita tildes para que "platano" encuentre "Plátano". */

@@ -27,7 +27,8 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 5. Gestión de listas | ✅ Completada y probada (merge a `develop`) |
 | 6. Categorías y productos | ✅ Completada (merge a `develop`) |
 | 7. Compartir listas | 🔄 En curso (decisiones tomadas, rama `feature/compartir`) |
-| Rediseño visual | 🔄 En curso (rama `feature/diseno`, código escrito; pendiente de compilar y probar) |
+| Rediseño visual | ✅ Hecho y subido (merge a `develop`) |
+| Mejoras de uso | 🔄 Probada (rama `feature/mejoras`); pendiente de commit y merge |
 | 8. Característica extra | ⏳ Pendiente |
 | 9. Reglas de seguridad | ⏳ Pendiente |
 | 10. Pulido y pruebas | ⏳ Pendiente |
@@ -431,6 +432,86 @@ Cambio de aspecto pedido tras la Fase 7. Rama creada desde `feature/compartir`.
 - [x] Pantallas reescritas y textos nuevos en `strings.xml`
 - [x] `docs/DISENO.md` actualizado
 - [ ] Compilar y probar en claro y oscuro
+- [ ] Commit y merge a `develop`
+
+---
+
+## 8 ter. MEJORAS DE USO (`feature/mejoras`) 🔄
+
+Salen del archivo *Mejoras de listado de la compra* (los puntos 5 y 6 estaban vacíos). Rama creada desde `develop`.
+
+| # | Mejora | Decisión |
+|---|---|---|
+| 1 | Elegir categoría al crear un producto | **Selector en la barra de añadir**: una pastilla "Categoría: X ▾" encima del campo. Por defecto "Sin categoría" y la elección se mantiene para añadir varios productos seguidos |
+| 2 | Crear categoría más visible | Botón **"＋ Nueva categoría"** siempre arriba en el detalle, en el estado vacío y al final del selector de categoría. Desaparece del menú escondido |
+| 3 | Compartir con código | **Sustituye a compartir por correo.** Cada lista tiene un código de 6 caracteres en mayúsculas **sin 0 ni O**. El propietario lo ve en *Compartir* (copiar y enviar). Los demás pulsan **Unirse** en "Mis listas" y lo escriben. Las listas antiguas reciben su código al abrir *Compartir* |
+| 4 | Icono de la lista | **Selector de emojis propio** (24 iconos) u **opción "Sin icono"** (entonces se muestra la inicial del nombre). Se elige al crear y al editar. El mismo selector se usa en las categorías. El color de la lista sigue saliendo del id |
+| 5 | Código más simple | Moderado: compartir pasa de ~420 a ~300 líneas (sin búsqueda por correo), pantallas largas divididas en archivos (`ListCard.kt`, `DetailComponents.kt`), textos sin usar eliminados y comentarios en español sencillo |
+
+**Datos nuevos:** `lists/{id}` guarda `icon` y `code`; nueva colección `codes/{codigo}` con `{ listId, ownerId }` para encontrar la lista sin ser miembro.
+
+### Reglas de Firestore nuevas (sustituyen a las de la Fase 7)
+
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == uid;
+    }
+
+    // Codigos para unirse: solo se pueden leer de uno en uno (no listar)
+    match /codes/{code} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow delete: if request.auth != null
+                    && resource.data.ownerId == request.auth.uid;
+    }
+
+    match /lists/{listId} {
+      allow create: if request.auth != null
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.resource.data.members == [request.auth.uid];
+
+      allow read: if request.auth.uid in resource.data.members;
+
+      allow update: if
+        // el propietario puede todo
+        request.auth.uid == resource.data.ownerId
+        // un miembro solo puede quitarse a si mismo
+        || (request.auth.uid in resource.data.members
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+            && request.resource.data.members == resource.data.members.removeAll([request.auth.uid]))
+        // alguien que no es miembro solo puede anadirse a si mismo (unirse con codigo)
+        || (request.auth != null
+            && !(request.auth.uid in resource.data.members)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+            && request.resource.data.members.hasAll(resource.data.members)
+            && request.resource.data.members.size() == resource.data.members.size() + 1
+            && request.auth.uid in request.resource.data.members);
+
+      allow delete: if request.auth.uid == resource.data.ownerId;
+
+      match /{sub=**} {
+        allow read, write: if request.auth.uid in
+          get(/databases/$(database)/documents/lists/$(listId)).data.members;
+      }
+    }
+  }
+}
+```
+
+Tareas:
+- [x] `icon` y `code` en el modelo, `codes` en `ListRepository`, `joinWithCode` en `ShareRepository`
+- [x] Diálogo de compartir con código (copiar y enviar) y diálogo **Unirse**
+- [x] Selector de iconos (`IconPicker`) en listas y categorías
+- [x] Selector de categoría en la barra de añadir y botón "Nueva categoría" visible
+- [x] Pantallas divididas y textos sin usar eliminados
+- [x] Publicar las reglas nuevas en la consola de Firebase
+- [x] Compilar y probar: compartir con código, iconos y unirse funcionan con dos cuentas
 - [ ] Commit y merge a `develop`
 
 ---

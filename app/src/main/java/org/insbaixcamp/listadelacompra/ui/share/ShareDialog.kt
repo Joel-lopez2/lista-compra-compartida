@@ -1,5 +1,10 @@
 package org.insbaixcamp.listadelacompra.ui.share
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,7 +34,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -42,7 +52,7 @@ import org.insbaixcamp.listadelacompra.ui.components.ConfirmDialog
 
 /**
  * Dialogo de compartir y miembros de una lista.
- * - Propietario: puede invitar por correo y quitar miembros.
+ * - Propietario: ve el codigo para compartir la lista y puede quitar miembros.
  * - Invitado: ve los miembros y puede salir de la lista.
  *
  * onLeft se llama cuando el usuario ya no tiene acceso a la lista
@@ -60,7 +70,6 @@ fun ShareDialog(
     )
     val uiState by viewModel.uiState.collectAsState()
 
-    var email by rememberSaveable { mutableStateOf("") }
     var memberToRemove by remember { mutableStateOf<User?>(null) }
     var showLeaveConfirm by remember { mutableStateOf(false) }
 
@@ -68,10 +77,7 @@ fun ShareDialog(
         if (uiState.left) onLeft()
     }
 
-    // Al compartir con exito se vacia el campo de correo
-    LaunchedEffect(uiState.sharedWith) {
-        if (uiState.sharedWith != null) email = ""
-    }
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -83,50 +89,50 @@ fun ShareDialog(
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (uiState.isOwner) {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it; viewModel.clearFeedback() },
-                        label = { Text(stringResource(R.string.share_email_label)) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(onDone = { viewModel.share(email) }),
-                        shape = RoundedCornerShape(12.dp),
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Solo el propietario ve el codigo para compartir la lista
+                if (uiState.isOwner && uiState.code.isNotBlank()) {
+                    Text(
+                        text = stringResource(R.string.share_code_title),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = uiState.code,
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        letterSpacing = 6.sp,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Button(
-                        onClick = { viewModel.share(email) },
-                        enabled = email.isNotBlank() && !uiState.isWorking,
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text(stringResource(R.string.share_button)) }
-
-                    uiState.errorRes?.let {
-                        Text(
-                            text = stringResource(it),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    uiState.sharedWith?.let {
-                        Text(
-                            text = stringResource(R.string.share_success, it),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    Text(
+                        text = stringResource(R.string.share_code_help),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = { copyCode(context, uiState.code) },
+                            modifier = Modifier.weight(1f)
+                        ) { Text(stringResource(R.string.copy_code)) }
+                        Button(
+                            onClick = { sendCode(context, uiState.listName, uiState.code) },
+                            modifier = Modifier.weight(1f)
+                        ) { Text(stringResource(R.string.send_code)) }
                     }
                     HorizontalDivider()
-                } else {
-                    uiState.errorRes?.let {
-                        Text(
-                            text = stringResource(it),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+                }
+
+                uiState.errorRes?.let {
+                    Text(
+                        text = stringResource(it),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
 
                 Text(
@@ -242,4 +248,19 @@ private fun MemberRow(
             }
         }
     }
+}
+
+/** Copia el codigo al portapapeles. */
+private fun copyCode(context: Context, code: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("codigo", code))
+    Toast.makeText(context, R.string.code_copied, Toast.LENGTH_SHORT).show()
+}
+
+/** Abre el menu de Android para enviar el codigo por WhatsApp, correo, etc. */
+private fun sendCode(context: Context, listName: String, code: String) {
+    val intent = Intent(Intent.ACTION_SEND)
+    intent.type = "text/plain"
+    intent.putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_code_text, listName, code))
+    context.startActivity(Intent.createChooser(intent, null))
 }
