@@ -29,10 +29,10 @@ Revisado en `C:\Users\lolpj\AndroidStudioProjects\Listadelacompra`:
 | 7. Compartir listas | 🔄 En curso (decisiones tomadas, rama `feature/compartir`) |
 | Rediseño visual | ✅ Hecho y subido (merge a `develop`) |
 | Mejoras de uso | 🔄 Probada (rama `feature/mejoras`); pendiente de commit y merge |
-| 8. Característica extra | ⏳ Pendiente |
+| 8. Característica extra | ✅ Autoclasificación hecha y probada (PR a `main`) |
 | 9. Reglas de seguridad | ⏳ Pendiente |
 | 10. Pulido y pruebas | ⏳ Pendiente |
-| 11. APK y entrega | ⏳ Pendiente |
+| 11. APK y entrega | 🔄 En curso (rama `feature/entrega`) |
 
 **Orden del plan:** Git/GitHub → Firebase → dependencias → modelo y arquitectura → funcionalidades → extra → seguridad → APK → entrega.
 
@@ -577,25 +577,39 @@ service cloud.firestore {
 
 ---
 
-## 12. FASE 11 — Publicación del APK y entrega
+## 12. FASE 11 — Publicación del APK y entrega (`feature/entrega`) 🔄
+
+Rama creada desde `feature/extra` para que el APK incluya el extra de autoclasificación.
+
+| # | Punto | Decisión |
+|---|---|---|
+| 1 | Tipo de APK | **Release firmado** con un keystore propio |
+| 2 | Dónde se publica | **GitHub Releases** (tag `v1.0`, APK adjunto y enlace en el README). Sin Firebase App Distribution |
+| 3 | Versión | `versionName 1.0`, `versionCode 1` (ya estaban así) |
+| 4 | Nombre e icono | Nombre "Lista de la compra". **Icono propio**: fondo coral y carrito blanco (adaptable) en lugar del robot de Android |
+| 5 | README | Completo: descarga, funcionalidades, extra, cómo probar, tecnologías, estructura y modelo de datos |
+| 6 | `.gitignore` | No se toca en esta rama. **El keystore se guarda fuera del proyecto** (por ejemplo `C:\Users\lolpj\keystores\`) |
 
 ### 12.1 Generar el APK
-- [ ] Android Studio → *Build → Generate Signed App Bundle / APK → APK*
-- [ ] Crear un **keystore** nuevo y **guardarlo fuera del repositorio** (con copia de seguridad; si se pierde no se puede actualizar la app)
-- [ ] Añadir el **SHA-1 del keystore de release** en Firebase (si se usa Auth con firma release)
-- [ ] Instalar el APK en un móvil limpio y probarlo
+- [ ] Android Studio → *Build → Generate Signed App Bundle / APK → APK → Next*
+- [ ] *Create new…* un **keystore** fuera del repositorio, con alias, contraseñas y datos del certificado. **Guardar la copia y las contraseñas** (si se pierden no se puede actualizar la app)
+- [ ] Elegir variante **release** y marcar las versiones de firma V1 y V2
+- [ ] El APK queda en `app/release/app-release.apk`
+- [ ] Instalarlo en un móvil limpio y probarlo (registro, listas, compartir con código, "leche" → "Lácteos")
+- [ ] SHA-1 en Firebase: no hace falta (solo correo y contraseña)
 
-### 12.2 Hacerlo accesible al profesorado (elegir uno o ambos)
-- [ ] **GitHub Releases:** crear tag `v1.0`, nueva *Release* y adjuntar el `.apk`
-- [ ] **Firebase App Distribution:** subir el APK e invitar al profesorado por email
+### 12.2 Publicarlo en GitHub Releases
+- [ ] Merge de `feature/extra` y de `feature/entrega` en `main`
+- [ ] GitHub → *Releases → Draft a new release*, tag `v1.0` sobre `main`
+- [ ] Título "Lista de la compra v1.0", adjuntar `app-release.apk` (renombrar a `lista-compra-v1.0.apk`)
+- [ ] Comprobar que el enlace `releases/latest` del README descarga el APK
 
-### 12.3 README del repositorio
-- [ ] Descripción y capturas de pantalla
-- [ ] Tecnologías usadas
-- [ ] Enlace de descarga del APK
-- [ ] Usuarios de prueba (si se quiere facilitar la corrección)
-- [ ] Cómo ejecutar el proyecto (clonar, añadir `google-services.json`, ejecutar)
-- [ ] Característica extra explicada
+### 12.3 Entrega
+- [x] Icono propio
+- [x] README completo
+- [ ] Capturas de pantalla en el README (opcional)
+- [ ] Comprobar el APK en otro móvil
+- [ ] Merge a `main` y release publicada
 
 ---
 
